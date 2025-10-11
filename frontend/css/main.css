@@ -1,0 +1,158 @@
+/* Main CSS for the web app */
+:root{
+  --bg: #0f0b16;
+  --bg-2: #131024;
+  --surface: rgba(255,255,255,0.06);
+  --card: rgba(255,255,255,0.08);
+  --text: #f9f7ff;
+  --muted: #c9c5d5;
+
+  /* candy colors */
+  --primary: #ff72b6;    /* pink */
+  --primary-600:#ff4fa3;
+  --secondary:#8aa8ff;   /* periwinkle */
+  --accent:#7ef6d7;      /* mint */
+  --ring:#ffc7ea;
+
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+/* Playful gradient background */
+body{
+  margin:0;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 800px at -10% -10%, rgba(255,114,182,.18), transparent 60%),
+    radial-gradient(900px 700px at 110% 0%, rgba(126,246,215,.14), transparent 55%),
+    linear-gradient(180deg, var(--bg), var(--bg-2));
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+/* ===== Centralized layout classes ===== */
+.page{ margin:0 auto; padding:1.25rem; }
+.page--narrow{ max-width:560px; }
+.page--wide{ max-width:720px; }
+/* Full-size feel while comfy on mobile */
+.container{ max-width:960px; }
+
+/* Headings with a soft gradient accent */
+h1,h2{
+  line-height:1.2;
+  letter-spacing:.2px;
+}
+h1{ font-size: clamp(1.25rem, 1rem + 2vw, 2rem); }
+h2{ font-size: clamp(1.1rem, 0.9rem + 1.5vw, 1.5rem); }
+
+h1::after{
+  content:"";
+  display:block;
+  height:4px;
+  width:72px;
+  margin-top:.5rem;
+  border-radius:999px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+  box-shadow: 0 4px 14px rgba(255,114,182,.45);
+}
+
+p{ line-height:1.5; color:var(--muted); }
+
+/* Links */
+a{ color:var(--secondary); text-decoration:none; }
+a:hover{ color:var(--primary); }
+
+/* Buttons (Bootstrap overrides kept minimal) */
+.btn{
+  border-radius:14px !important;
+  box-shadow: var(--shadow);
+  transition: transform .08s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+}
+.btn:hover{ transform: translateY(-1px); }
+
+.btn-primary{
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) !important;
+  border:0 !important;
+  color:#1b0b18 !important;
+}
+.btn-primary:hover{
+  filter: brightness(1.05);
+}
+
+.btn-outline-primary{
+  color:var(--primary) !important;
+  border-color: var(--primary) !important;
+  background: transparent !important;
+}
+.btn-outline-primary:hover{
+  color:#1b0b18 !important;
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.btn-outline-secondary{
+  color:var(--secondary) !important;
+  border-color: var(--secondary) !important;
+}
+.btn-outline-secondary:hover{
+  color:#0c0b12 !important;
+  background: var(--secondary) !important;
+  border-color: var(--secondary) !important;
+}
+
+/* Inputs */
+.form-control, .form-select{
+  background: var(--surface) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: var(--text) !important;
+  border-radius: 14px !important;
+}
+.form-control::placeholder{ color: #a9a3bb; }
+.form-control:focus, .form-select:focus{
+  box-shadow: 0 0 0 4px rgba(255,199,234,.25) !important;
+  border-color: var(--ring) !important;
+}
+
+/* Cards */
+.card{
+  background: var(--card) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 18px !important;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
+}
+.card img{ object-fit: cover; border-radius: 14px; }
+.card-title{
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+
+/* Stat cards get a subtle glow */
+.stat-card .card{
+  border-image: linear-gradient(120deg, rgba(255,114,182,.55), rgba(138,168,255,.45)) 1;
+  box-shadow: 0 10px 30px rgba(255,114,182,.15), 0 12px 26px rgba(138,168,255,.12);
+}
+
+/* Game detail sheet */
+.game-card--sheet{
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+}
+.game-cover{ width:100%; height:auto; border-radius:14px; }
+
+/* Button group spacing on wrap */
+.btn-group.flex-wrap > .btn{ margin: 4px; }
+
+/* Small-screen niceties */
+@media (max-width: 600px){
+  .game-grid .col-md-3{ width:100%; }
+  .stat-card{ margin-bottom:12px; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .btn{ transition: none; }
+}
