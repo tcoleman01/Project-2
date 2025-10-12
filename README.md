@@ -7,7 +7,7 @@
 Track games you play/own, log hours and spending, and share community reviews.
 
 ## Live Demo
-- Deployed URL: _add link_
+- Deployed URL: https://tcoleman01.github.io/Project-2/
 - Narrated video (2–3 min): _add link_
 
 ## Screenshots
