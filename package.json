@@ -32,6 +32,13 @@
   "dependencies": {
     "express": "^5.1.0",
     "mongodb": "6.20",
-    "nodemon": "^3.1.10"
-  }
+  "nodemon": "^3.1.10"
+},
+"scripts": {
+  "start": "node ./node_modules/nodemon/bin/nodemon.js backend.js",
+  "seed": "node scripts/seed-1000.js",
+  "lint": "eslint .",
+  "format": "prettier -w ."
+}
+
 }
