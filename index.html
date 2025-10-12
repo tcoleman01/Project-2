@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Redirecting…</title>
+
+  <!-- Works on both Live Server and GitHub Pages -->
+  <meta http-equiv="refresh" content="0; url=./frontend/index.html" />
+
+  <script>
+    // JS fallback for slower hosts or file:// testing
+    (function () {
+      var target = "frontend/index.html";
+      // Preserve the current directory (GitHub Pages subpaths)
+      var base = location.href.replace(/index\.html?$/i, "");
+      if (!base.endsWith("/")) base += "/";
+      location.replace(base + target);
+    })();
+  </script>
+</head>
+<body style="font-family: system-ui, sans-serif; padding: 2rem; text-align: center;">
+  <h2>Redirecting to the app…</h2>
+  <p>If it doesn’t load automatically, 
+    <a href="./frontend/index.html">click here to open your app</a>.
+  </p>
+</body>
+</html>
