@@ -29,7 +29,7 @@ function onSignup(form) {
     users.push({ email, username, password, createdAt: Date.now(), updatedAt: Date.now() });
     saveUsers(users);
     setSession({ email });
-    location.href = "/account.html";
+    location.href = "./account.html";                // ← was /account.html
   });
 }
 
@@ -42,7 +42,7 @@ function onLogin(form) {
     const user = getUsers().find(u => u.email === email && u.password === password);
     if (!user) return showMsg("Invalid credentials.");
     setSession(user);
-    location.href = "/account.html";
+    location.href = "./account.html";                // ← was /account.html
   });
 }
 
