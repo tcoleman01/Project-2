@@ -1,0 +1,37 @@
+[
+  {
+    "_id": { "$oid": "100000000000000000000001" },
+    "gameId": { "$oid": "000000000000000000000001" },
+    "userId": { "$oid": "200000000000000000000001" },
+    "rating": 5,
+    "text": "An absolute masterpiece of open-world design and combat depth."
+  },
+  {
+    "_id": { "$oid": "100000000000000000000002" },
+    "gameId": { "$oid": "000000000000000000000001" },
+    "userId": { "$oid": "200000000000000000000002" },
+    "rating": 4,
+    "text": "Incredible world, but some boss fights are too punishing for casual players."
+  },
+  {
+    "_id": { "$oid": "100000000000000000000003" },
+    "gameId": { "$oid": "000000000000000000000002" },
+    "userId": { "$oid": "200000000000000000000001" },
+    "rating": 5,
+    "text": "A relaxing and addictive farming experience — my go-to comfort game."
+  },
+  {
+    "_id": { "$oid": "100000000000000000000004" },
+    "gameId": { "$oid": "000000000000000000000004" },
+    "userId": { "$oid": "200000000000000000000002" },
+    "rating": 4,
+    "text": "Beautiful art and tight controls, though quite difficult at times."
+  },
+  {
+    "_id": { "$oid": "100000000000000000000005" },
+    "gameId": { "$oid": "000000000000000000000005" },
+    "userId": { "$oid": "200000000000000000000001" },
+    "rating": 5,
+    "text": "Still one of the best RPGs ever made — deep story and memorable quests."
+  }
+]

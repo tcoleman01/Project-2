@@ -16,7 +16,7 @@ function MyMongoDB({
     const games = client.db(dbName).collection(gameCollection);
     const reviews = client.db(dbName).collection(reviewCollection);
     const userGames = client.db(dbName).collection(userGameCollection);
-    return { client, games, reviews };
+    return { client, games, reviews, userGames };
   };
 
   me.getAllGames = async ({ query = {}, pageSize = 20, page = 0 } = {}) => {
@@ -119,6 +119,7 @@ function MyMongoDB({
     }
   };
 
+  //UPDATE - MOVE DOC ELEMENTS TO ROUTES
   me.createReview = async (gameId, { rating, text = "" }) => {
     const { client, reviews } = connect();
     try {
@@ -137,6 +138,7 @@ function MyMongoDB({
     }
   };
 
+  //UPDATE AND FIX
   me.updateReviewById = async (id, updates) => {
     const { client, games } = connect();
     try {
@@ -162,24 +164,188 @@ function MyMongoDB({
     }
   };
 
-  me.addGameToUser = async (userId, gameId) => {
-    // Placeholder function for adding a game to a user's collection
-    return true;
+  // === userGames collection CRUD ===
+  me.addUserGame = async (userId, gameId, status, hoursPlayed, personalNotes) => {
+    const { client, userGames } = connect();
+
+    try {
+      await userGames.createIndex({ userId: 1, gameId: 1 }, { unique: true });
+
+      const doc = {
+        userId: new ObjectId(userId),
+        gameId: new ObjectId(gameId),
+        status,
+        hoursPlayed,
+        personalNotes,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const r = await userGames.insertOne(doc);
+      return await userGames.findOne({ _id: r.insertedId });
+    } finally {
+      await client.close();
+    }
   };
 
-  me.deleteGameFromUser = async (userId, gameId) => {
-    // Placeholder function for removing a game from a user's collection
-    return true;
+  // Update a userGame entry by its ID. Only status, hoursPlayed,
+  // and personalNotes fields will be updated.
+  me.updateUserGame = async (id, updates) => {
+    const { client, userGames } = connect();
+
+    try {
+      const safeUpdates = {};
+      const allowedFields = ["status", "hoursPlayed", "personalNotes"];
+      for (const field of allowedFields) {
+        if (field in updates) {
+          safeUpdates[field] = updates[field];
+        }
+      }
+      safeUpdates.updatedAt = new Date();
+
+      await userGames.updateOne({ _id: new ObjectId(id) }, { $set: safeUpdates });
+      return await userGames.findOne({ _id: new ObjectId(id) });
+    } finally {
+      await client.close();
+    }
   };
 
-  me.getUserGames = async (userId) => {
-    // Placeholder function for retrieving all games in a user's collection
-    return [];
+  // Delete a userGame entry by its objectId
+  me.deleteUserGame = async (id) => {
+    const { client, userGames } = connect();
+
+    try {
+      const r = await userGames.deleteOne({ _id: new ObjectId(id) });
+      return r.deletedCount > 0; // Return true if a document was deleted
+    } finally {
+      await client.close();
+    }
   };
 
-  me.updateUserGame = async (userId, gameId, updates) => {
-    // Placeholder function for updating details of a game in a user's collection
-    return true;
+  // Fetch all games in a user's list/profile, including game details
+  // and community review stats (count and average rating)
+  me.getUserGames = async (id) => {
+    const { client, userGames } = connect();
+
+    try {
+      const pipeline = [
+        // Match only the userId we care about
+        { $match: { userId: new ObjectId(id) } },
+
+        // Join with games collection to get game details
+        {
+          $lookup: {
+            from: gameCollection,
+            localField: "gameId",
+            foreignField: "_id",
+            as: "gameDetails",
+          },
+        },
+        { $unwind: "$gameDetails" },
+
+        // Join with reviews collection to get user's review for this game, if any
+        {
+          $lookup: {
+            from: reviewCollection,
+            let: { gId: "$gameId", uId: "$userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [{ $eq: ["$gameId", "$$gId"] }, { $eq: ["$userId", "$$uId"] }],
+                  },
+                },
+              },
+            ],
+            as: "userReview",
+          },
+        },
+        { $unwind: { path: "$userReview", preserveNullAndEmptyArrays: true } },
+
+        // Join again with reviews to get all reviews for this game to calculate community stats
+        {
+          $lookup: {
+            from: reviewCollection,
+            localField: "gameId",
+            foreignField: "gameId",
+            as: "allReviews",
+          },
+        },
+
+        // Add fields for community review count and average rating
+        {
+          $addFields: {
+            communityReviewCount: { $size: "$allReviews" },
+            communityAvgRating: { $avg: "$allReviews.rating" },
+          },
+        },
+
+        // Remove the raw aray of all reviews as we only needed it for stats.
+        // Sort by most recently updated userGames first
+        { $project: { allReviews: 0 } },
+        { $sort: { updatedAt: -1 } },
+      ];
+      return await userGames.aggregate(pipeline).toArray();
+    } finally {
+      await client.close();
+    }
+  };
+
+  // Get summary stats for a user's game list/profile.
+  // To add additional stats, modify the $group section.
+  me.getUserGameStats = async (userId) => {
+    const { client, userGames } = connect();
+
+    try {
+      const pipeline = [
+        { $match: { userId: new ObjectId(userId) } },
+        {
+          $lookup: {
+            from: gameCollection,
+            localField: "gameId",
+            foreignField: "_id",
+            as: "gameDetails",
+          },
+        },
+        { $unwind: "$gameDetails" },
+
+        // Add price field so we can sum up total amount spent
+        { $addFields: { price: { $ifNull: ["$gameDetails.price", 0] } } },
+
+        {
+          $group: {
+            _id: "$userId",
+            totalGames: { $sum: 1 },
+            totalCompleted: { $sum: { $cond: [{ $eq: ["$status", "Completed"] }, 1, 0] } },
+            totalBacklog: { $sum: { $cond: [{ $eq: ["$status", "Backlog"] }, 1, 0] } },
+            totalWishlist: { $sum: { $cond: [{ $eq: ["$status", "Wishlist"] }, 1, 0] } },
+            totalPlaying: { $sum: { $cond: [{ $eq: ["$status", "Playing"] }, 1, 0] } },
+            totalHours: { $sum: "$hoursPlayed" },
+            totalSpent: { $sum: "$price" },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            userId: "$_id",
+            totalGames: 1,
+            totalCompleted: 1,
+            totalBacklog: 1,
+            totalWishlist: 1,
+            totalPlaying: 1,
+            totalHours: 1,
+            totalSpent: 1,
+          },
+        },
+      ];
+
+      return await userGames.aggregate(pipeline).toArray();
+    } catch (error) {
+      console.error("Error fetching user game stats:", error);
+      throw error;
+    } finally {
+      await client.close();
+    }
   };
 
   return me;
