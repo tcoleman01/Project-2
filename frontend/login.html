@@ -9,19 +9,37 @@
   <link rel="stylesheet" href="./css/modules/game.css" />
 </head>
 <body class="bg-dark text-light">
-  <main class="container page page--narrow">
+  <main class="container page page--narrow py-4">
     <h1 class="h3 mb-3">Welcome back</h1>
+
     <form id="loginForm" class="vstack gap-3">
-      <div><label class="form-label">Email</label><input class="form-control" type="email" name="email" required></div>
-      <div><label class="form-label">Password</label><input class="form-control" type="password" name="password" required></div>
-      <button class="btn btn-primary">Log In</button>
-      <p class="text-secondary m-0">New here? <a href="./signup.html">Create an account</a></p>
+      <div>
+        <label for="email" class="form-label">Email</label>
+        <input id="email" class="form-control" type="email" name="email" required />
+      </div>
+
+      <div>
+        <label for="password" class="form-label">Password</label>
+        <input id="password" class="form-control" type="password" name="password" required />
+      </div>
+
+      <button class="btn btn-primary w-100" type="submit">Log In</button>
+
+      <!-- Forgot password: make it high-contrast on dark bg -->
+      <p class="text-center m-0">
+        <a href="./forgot-password.html" class="link-light text-decoration-underline">Forgot your password?</a>
+      </p>
+
+      <!-- Signup hint -->
+      <p class="text-center text-secondary m-0">
+        New here?
+        <a href="./signup.html" class="link-light text-decoration-underline">Create an account</a>
+      </p>
     </form>
-    <p class="text-center mt-3">
-  <a href="./forgot-password.html" class="link-secondary">Forgot your password?</a>
-</p>
+
     <p id="msg" class="mt-3 text-warning"></p>
   </main>
+
   <script type="module" src="./js/auth-local.js"></script>
 </body>
 </html>
