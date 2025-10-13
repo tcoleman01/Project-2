@@ -3,7 +3,8 @@ import { MongoClient, ObjectId } from "mongodb";
 function MyMongoDB({
   dbName = "videogameTracker",
   gameCollection = "mock_games",
-  reviewCollection = "mock_reviews", //change to "reviews" in production
+  reviewCollection = "mock_reviews", //change to actual collection name later
+  userGameCollection = "mock_user_games",
   defaultUri = process.env.MONGODB_URI || "mongodb://localhost:27017",
 } = {}) {
   const me = {};
@@ -14,6 +15,7 @@ function MyMongoDB({
     const client = new MongoClient(URI);
     const games = client.db(dbName).collection(gameCollection);
     const reviews = client.db(dbName).collection(reviewCollection);
+    const userGames = client.db(dbName).collection(userGameCollection);
     return { client, games, reviews };
   };
 
@@ -159,6 +161,27 @@ function MyMongoDB({
       await client.close();
     }
   };
+
+  me.addGameToUser = async (userId, gameId) => {
+    // Placeholder function for adding a game to a user's collection
+    return true;
+  };
+
+  me.deleteGameFromUser = async (userId, gameId) => {
+    // Placeholder function for removing a game from a user's collection
+    return true;
+  };
+
+  me.getUserGames = async (userId) => {
+    // Placeholder function for retrieving all games in a user's collection
+    return [];
+  };
+
+  me.updateUserGame = async (userId, gameId, updates) => {
+    // Placeholder function for updating details of a game in a user's collection
+    return true;
+  };
+
   return me;
 }
 
