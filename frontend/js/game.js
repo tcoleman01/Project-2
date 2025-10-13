@@ -3,7 +3,7 @@ const params = new URLSearchParams(location.search);
 const slug = params.get("slug");
 
 async function loadGames() {
-  const res = await fetch("/frontend/data/games.json", { cache: "no-store" });
+  const res = await fetch("./data/games.json", { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load games.json");
   return res.json();
 }
