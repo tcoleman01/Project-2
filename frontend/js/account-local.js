@@ -10,10 +10,10 @@ const saveUsers = (arr) => localStorage.setItem(USERS_KEY, JSON.stringify(arr));
 
 function requireAuth() {
   const session = getSession();
-  if (!session) { location.href = "/login.html"; return null; }
+  if (!session) { location.href = "./login.html"; return null; }           // ← was /login.html
   const users = getUsers();
   const me = users.find(u => u.email === session.email);
-  if (!me) { localStorage.removeItem(SESSION_KEY); location.href = "/login.html"; return null; }
+  if (!me) { localStorage.removeItem(SESSION_KEY); location.href = "./login.html"; return null; } // ← was /login.html
   return me;
 }
 
@@ -38,7 +38,7 @@ document.getElementById("profileForm").addEventListener("submit", (e) => {
   const idx = users.findIndex(u => u.email === me.email);
   users[idx] = { ...users[idx], email: data.email.trim().toLowerCase(), username: data.username.trim(), updatedAt: Date.now() };
   saveUsers(users);
-  localStorage.setItem("vg_session", JSON.stringify({ email: users[idx].email }));
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ email: users[idx].email }));
   show("Profile updated.");
 });
 
@@ -58,7 +58,7 @@ document.getElementById("passwordForm").addEventListener("submit", (e) => {
 // Logout
 document.getElementById("logoutBtn").addEventListener("click", () => {
   localStorage.removeItem(SESSION_KEY);
-  location.href = "/login.html";
+  location.href = "./login.html";                                          // ← was /login.html
 });
 
 // Delete account
@@ -67,5 +67,5 @@ document.getElementById("deleteBtn").addEventListener("click", () => {
   const users = getUsers().filter(u => u.email !== me.email);
   saveUsers(users);
   localStorage.removeItem(SESSION_KEY);
-  location.href = "/signup.html";
+  location.href = "./signup.html";                                         // ← was /signup.html
 });
