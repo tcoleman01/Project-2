@@ -146,6 +146,8 @@ a:hover{ color:var(--primary); }
 /* Button group spacing on wrap */
 .btn-group.flex-wrap > .btn{ margin: 4px; }
 
+
+
 /* Small-screen niceties */
 @media (max-width: 600px){
   .game-grid .col-md-3{ width:100%; }

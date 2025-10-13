@@ -2,17 +2,19 @@ import { MongoClient } from "mongodb";
 
 function MyMongoDB({
   dbName = "videogameTracker",
-  collection_Name = "mock_games",
+  gameCollection = "mock_games",
+  reviewCollection = "mock_reviews", //change to "reviews" in production
   defaultUri = "mongodb://localhost:27017",
 } = {}) {
   const me = {};
-  const URI = process.env.MONGODB_URI || defaultUri;
+  const URI = defaultUri;
 
   const connect = () => {
     console.log("Connecting to MongoDB at...", URI);
     const client = new MongoClient(URI);
-    const games = client.db(dbName).collection(collection_Name);
-    return { client, games };
+    const games = client.db(dbName).collection(gameCollection);
+    const reviews = client.db(dbName).collection(reviewCollection);
+    return { client, games, reviews };
   };
   me.getAllGames = async ({ query = {}, pageSize = 20, page = 0 } = {}) => {
     const { client, games } = connect();
@@ -74,21 +76,36 @@ function MyMongoDB({
   };
 
   // === reviews collection ===
-  me.getReviewsByGame = async (gameId) => {
-    const { client, games } = (connect)();
+  // me.getReviews = async (gameId) => {
+  //   const { client, reviews } = (connect)();
+  //   try {
+  //     const query = {};
+  //     if (gameId) query.gameId = new ObjectId(gameId);
+  //     return await reviews.find(query).sort({ createdAt: -1 }).toArray();
+  //   } finally { await client.close();}
+  // };
+
+  me.getReviews = async ({ query = {}, pageSize = 20, page = 0 } = {}) => {
+    const { client, reviews } = connect();
+
     try {
-      const reviews = games.db.collection("reviews");
-      const { ObjectId } = await import("mongodb");
-      await reviews.createIndex({ gameId: 1 }).catch(() => {});
-      return await reviews.find({ gameId: new ObjectId(gameId) }).sort({ createdAt: -1 }).toArray();
-    } finally { await client.close(); }
+      const data = await reviews
+        .find(query)
+        .limit(pageSize)
+        .skip(pageSize * page)
+        .toArray();
+      return data;
+    } catch (err) {
+      console.error("Error fetching reviews from MongoDB", err);
+      throw err;
+    } finally {
+      await client.close();
+    }
   };
 
   me.createReview = async (gameId, { rating, text = "" }) => {
-    const { client, games } = (connect)();
+    const { client, reviews } = (connect)();
     try {
-      const reviews = games.db.collection("reviews");
-      const { ObjectId } = await import("mongodb");
       const doc = { gameId: new ObjectId(gameId), userId: null, rating: Number(rating), text: String(text).trim(), createdAt: new Date(), updatedAt: new Date() };
       const r = await reviews.insertOne(doc);
       return await reviews.findOne({ _id: r.insertedId });

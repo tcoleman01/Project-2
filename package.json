@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node ./node_modules/nodemon/bin/nodemon.js backend.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "seed": "node scripts/seed-1000.js",
+    "lint": "eslint .",
+    "format": "prettier -w ."
   },
   "repository": {
     "type": "git",
@@ -32,13 +34,6 @@
   "dependencies": {
     "express": "^5.1.0",
     "mongodb": "6.20",
-  "nodemon": "^3.1.10"
-},
-"scripts": {
-  "start": "node ./node_modules/nodemon/bin/nodemon.js backend.js",
-  "seed": "node scripts/seed-1000.js",
-  "lint": "eslint .",
-  "format": "prettier -w ."
-}
-
+    "nodemon": "^3.1.10"
+  }
 }

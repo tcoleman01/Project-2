@@ -4,6 +4,17 @@ import { slugify } from "./utils/slugify.js";
 
 const router = express.Router();
 
+router.get("/games", async (req, res) => {
+  console.log("GET all /games");
+  try {
+    const games = await MyDB.getAllGames(); // Fetch all games from DB
+    res.json({games});
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Server error", games: [] });
+  }
+});
+
 router.get("/games/:idOrSlug", async (req, res) => {
   try {
     const game = await MyDB.getGameByIdOrSlug(req.params.idOrSlug);
