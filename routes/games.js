@@ -4,6 +4,7 @@ import { slugify } from "./utils/slugify.js";
 
 const router = express.Router();
 
+// GET all games in the games collection
 router.get("/games", async (req, res) => {
   console.log("GET all /games");
   try {
@@ -15,18 +16,22 @@ router.get("/games", async (req, res) => {
   }
 });
 
-// Get a single game by its ID or slug
+// GET a specific game by its ID or slug, along with community review stats
 router.get("/games/:idOrSlug", async (req, res) => {
   try {
     const game = await MyDB.getGameByIdOrSlug(req.params.idOrSlug);
     if (!game) return res.status(404).json({ error: "Game not found" });
-    res.json({ game });
+    const reviews = await MyDB.getReviews(game._id.toString());
+    const count = reviews.length;
+    const avgRating = count ? reviews.reduce((a, r) => a + Number(r.rating || 0), 0) / count : null;
+    res.json({ game, community: { count, avgRating } });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Server error" });
   }
 });
 
+// POST to add a new game to the games collection
 router.post("/games", async (req, res) => {
   try {
     const { title, platform, year, price, genre, status, hours, coverUrl, description } =
@@ -54,6 +59,7 @@ router.post("/games", async (req, res) => {
   }
 });
 
+// PATCH to update an existing game by its ID
 router.patch("/games/:id", async (req, res) => {
   try {
     const allowed = [
@@ -83,6 +89,7 @@ router.patch("/games/:id", async (req, res) => {
   }
 });
 
+// DELETE a game by its ID
 router.delete("/games/:id", async (req, res) => {
   try {
     const ok = await MyDB.deleteGameById(req.params.id);

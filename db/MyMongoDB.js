@@ -99,8 +99,13 @@ function MyMongoDB({
     const { client, reviews } = connect();
 
     const query = {};
-    if (gameId) query.gameId = new ObjectId(gameId);
-    if (userId) query.userId = new ObjectId(userId);
+    if (gameId) {
+      query.gameId = new ObjectId(gameId);
+    }
+
+    if (userId) {
+      query.userId = new ObjectId(userId);
+    }
 
     try {
       const data = await reviews
