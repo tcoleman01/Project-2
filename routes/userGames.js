@@ -40,7 +40,7 @@ router.post("/userGames", async (req, res) => {
   console.log("Received POST request for api/userGames");
 
   try {
-    const { userId, gameId, status, hoursPlayed, personalNotes } = req.body;
+    const { userId, gameId, status, price, hoursPlayed, personalNotes } = req.body;
     if (!userId || !gameId)
       return res.status(400).json({ error: "userId and gameId are required" });
 
@@ -50,6 +50,7 @@ router.post("/userGames", async (req, res) => {
     const goodHours =
       isFinite(Number(hoursPlayed)) && Number(hoursPlayed) >= 0 ? Number(hoursPlayed) : 0;
     const notes = personalNotes ? String(personalNotes).trim() : "";
+    const goodPrice = isFinite(Number(price)) && Number(price) >= 0 ? Number(price) : 0;
 
     // Check if the game exists
     const game = await MyDB.getGameByIdOrSlug(gameId);
@@ -60,6 +61,7 @@ router.post("/userGames", async (req, res) => {
       userId,
       gameId,
       status: goodStatus,
+      price: goodPrice,
       hoursPlayed: goodHours,
       personalNotes: notes,
     });

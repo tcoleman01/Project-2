@@ -85,16 +85,7 @@ function MyMongoDB({
     }
   };
 
-  // === reviews collection ===
-  // me.getReviews = async (gameId) => {
-  //   const { client, reviews } = (connect)();
-  //   try {
-  //     const query = {};
-  //     if (gameId) query.gameId = new ObjectId(gameId);
-  //     return await reviews.find(query).sort({ createdAt: -1 }).toArray();
-  //   } finally { await client.close();}
-  // };
-
+  // === reviews collection CRUD ===
   me.getReviews = async ({ gameId, userId, pageSize = 20, page = 0 } = {}) => {
     const { client, reviews } = connect();
 
@@ -159,7 +150,6 @@ function MyMongoDB({
     const { client, games } = connect();
     try {
       const reviews = games.db.collection("reviews");
-      const { ObjectId } = await import("mongodb");
       const r = await reviews.deleteOne({ _id: new ObjectId(id) });
       return r.deletedCount > 0;
     } finally {
@@ -192,13 +182,13 @@ function MyMongoDB({
   };
 
   // Update a userGame entry by its ID. Only status, hoursPlayed,
-  // and personalNotes fields will be updated.
+  // and price, and personalNotes fields will be updated.
   me.updateUserGame = async (id, updates) => {
     const { client, userGames } = connect();
 
     try {
       const safeUpdates = {};
-      const allowedFields = ["status", "hoursPlayed", "personalNotes"];
+      const allowedFields = ["status", "price", "hoursPlayed", "personalNotes"];
       for (const field of allowedFields) {
         if (field in updates) {
           safeUpdates[field] = updates[field];
