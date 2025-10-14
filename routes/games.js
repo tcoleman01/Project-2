@@ -15,14 +15,12 @@ router.get("/games", async (req, res) => {
   }
 });
 
+// Get a single game by its ID or slug
 router.get("/games/:idOrSlug", async (req, res) => {
   try {
     const game = await MyDB.getGameByIdOrSlug(req.params.idOrSlug);
     if (!game) return res.status(404).json({ error: "Game not found" });
-    const reviews = await MyDB.getReviewsByGame(game._id.toString());
-    const count = reviews.length;
-    const avgRating = count ? reviews.reduce((a, r) => a + Number(r.rating || 0), 0) / count : null;
-    res.json({ game, community: { count, avgRating } });
+    res.json({ game });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Server error" });

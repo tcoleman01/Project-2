@@ -40,7 +40,6 @@ function MyMongoDB({
   me.getGameByIdOrSlug = async (idOrSlug) => {
     const { client, games } = connect();
     try {
-      const { ObjectId } = await import("mongodb");
       const byId = ObjectId.isValid(idOrSlug)
         ? await games.findOne({ _id: new ObjectId(idOrSlug) })
         : null;
@@ -67,7 +66,6 @@ function MyMongoDB({
   me.updateGameById = async (id, updates) => {
     const { client, games } = connect();
     try {
-      const { ObjectId } = await import("mongodb");
       updates.updatedAt = new Date();
       await games.updateOne({ _id: new ObjectId(id) }, { $set: updates });
       return await games.findOne({ _id: new ObjectId(id) });
