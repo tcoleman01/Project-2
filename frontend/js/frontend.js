@@ -2,6 +2,7 @@ console.log("This is the frontend JavaScript file.");
 
 function Games() {
   const me = {};
+  const userId = "200000000000000000000001"; // Example userId for testing
 
   me.showError = ({ msg, res, type = "danger" }) => {
     // Show an error message to the user using bootstrap
@@ -14,37 +15,69 @@ function Games() {
   };
 
   const renderGames = (games) => {
-    const gamesDiv = document.getElementById("game-list");
-    for (const { title, platform, genre, price } of games) {
+    const gamesDiv = document.getElementById("game-section");
+    gamesDiv.innerHTML = ""; // Clear existing content
+    for (const g of games) {
+      const game = g.gameDetails || {};
+      const { title, platform, genre, price, year } = game;
+      const status = g.status || "Backlog";
+      const hoursPlayed = g.hoursPlayed || 0;
+      const userRating = g.userReview?.rating || "-";
       const card = document.createElement("div");
-      card.className = "card game-card";
+      card.className = "game-card";
       card.innerHTML = `
-                <div class="card-body">
-                    <h5 class="card-title">${title}</h5>
-                    <p class="card-text">${genre}</p>
-                    <p class="card-text">${platform}</p>
-                    <p class="card-text">$${price}</p>
-                </div>
+                <div class="game-card-image">
+                                <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600&h=400&fit=crop" alt="Baldur's Gate 3">
+                                <span class="status-badge badge-playing">${status}</span>
+                            </div>
+                            <div class="game-card-body">
+                                <h5 class="game-title">${title}</h5>
+                                <div class="genre-tags">
+                                    <span class="genre-tag">${genre}</span>
+                                </div>
+                                <div class="game-meta">
+                                    <span class="game-meta-tag">${year || "-"}</span>
+                                    <span class="game-meta-tag">${platform}</span>
+                                    <span class="game-meta-tag">$${price?.toFixed ? price.toFixed(2) : "0.00"}</span>
+                                </div>    
+                                <div class="game-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-value">${hoursPlayed || 0}</div>
+                                        <div class="stat-label">Hours</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${userRating}</div>
+                                    <div class="stat-label">Rating</div>
+                                </div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn-card-action">Edit</button>
+                                    <button class="btn-card-action btn-delete">Delete</button>
+                                </div>
+                            </div>
                 `;
       gamesDiv.appendChild(card);
     }
   };
 
   me.refreshGames = async () => {
-    const res = await fetch("/api/games");
-    if (!res.ok) {
-      console.error("Failed to fetch games", res.status, res.statusText);
-      me.showError({ msg: "Failed to fetch games", res });
-      return;
+    try {
+      const res = await fetch(`/api/userGames?userId=${userId}`);
+      if (!res.ok) {
+        console.error("Failed to fetch games", res.status, res.statusText);
+        me.showError({ msg: "Failed to fetch games", res });
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Fetched games:", data);
+
+      renderGames(data.games);
+    } catch (e) {
+      console.error("Error fetching user games", e);
+      const gamesDiv = document.getElementById("game-section");
+      gamesDiv.innerHTML = `<div class="alert alert-danger">Failed to load your games. Bummer.</div>`;
     }
-
-    const data = await res.json();
-    console.log("Fetched games:", data);
-
-    const gamesDiv = document.getElementById("game-list");
-    gamesDiv.innerHTML = ""; // Clear existing games
-
-    renderGames(data.games);
   };
   return me;
 }

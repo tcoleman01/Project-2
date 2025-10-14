@@ -158,7 +158,7 @@ function MyMongoDB({
   };
 
   // === userGames collection CRUD ===
-  me.addUserGame = async (userId, gameId, status, hoursPlayed, personalNotes) => {
+  me.addUserGame = async (userId, gameId, status, price, hoursPlayed) => {
     const { client, userGames } = connect();
 
     try {
@@ -168,8 +168,8 @@ function MyMongoDB({
         userId: new ObjectId(userId),
         gameId: new ObjectId(gameId),
         status,
+        price,
         hoursPlayed,
-        personalNotes,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -218,28 +218,34 @@ function MyMongoDB({
   // Fetch all games in a user's list/profile, including game details
   // and community review stats (count and average rating)
   me.getUserGames = async (id) => {
-    const { client, userGames } = connect();
+    const { client } = connect();
+    const db = client.db(dbName);
+    const userGames = db.collection(userGameCollection);
 
     try {
+      // Safely use configured names
+      const gamesColName = gameCollection;
+      const reviewsColName = reviewCollection;
+
       const pipeline = [
-        // Match only the userId we care about
+        // Only games for this user
         { $match: { userId: new ObjectId(id) } },
 
-        // Join with games collection to get game details
+        // Join with the games collection for metadata
         {
           $lookup: {
-            from: gameCollection,
+            from: gamesColName,
             localField: "gameId",
             foreignField: "_id",
             as: "gameDetails",
           },
         },
-        { $unwind: "$gameDetails" },
+        { $unwind: { path: "$gameDetails", preserveNullAndEmptyArrays: true } },
 
-        // Join with reviews collection to get user's review for this game, if any
+        // Join with reviews to get user's own rating/review
         {
           $lookup: {
-            from: reviewCollection,
+            from: reviewsColName,
             let: { gId: "$gameId", uId: "$userId" },
             pipeline: [
               {
@@ -255,17 +261,17 @@ function MyMongoDB({
         },
         { $unwind: { path: "$userReview", preserveNullAndEmptyArrays: true } },
 
-        // Join again with reviews to get all reviews for this game to calculate community stats
+        // Join again with reviews to calculate community stats
         {
           $lookup: {
-            from: reviewCollection,
+            from: reviewsColName,
             localField: "gameId",
             foreignField: "gameId",
             as: "allReviews",
           },
         },
 
-        // Add fields for community review count and average rating
+        // Add computed fields for community stats
         {
           $addFields: {
             communityReviewCount: { $size: "$allReviews" },
@@ -273,12 +279,13 @@ function MyMongoDB({
           },
         },
 
-        // Remove the raw aray of all reviews as we only needed it for stats.
-        // Sort by most recently updated userGames first
+        // Clean up and sort
         { $project: { allReviews: 0 } },
         { $sort: { updatedAt: -1 } },
       ];
-      return await userGames.aggregate(pipeline).toArray();
+
+      const data = await userGames.aggregate(pipeline).toArray();
+      return data;
     } finally {
       await client.close();
     }
