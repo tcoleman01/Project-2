@@ -71,7 +71,7 @@
     </div>
 
     <!--Container for personal game catalogue-->
-    <div class="container-fluid py-4" id="personal-catalogue">
+    <div class="container py-4" id="personal-catalogue">
       <div class="row">
         <!--Filter section-->
         <div class="col-lg-3">
@@ -163,43 +163,47 @@
         </div>
 
         <div class="col-lg-9">
-          <h2 class="mb-4">Test</h2>
-
-          <div class="mb-5">
-            <div class="section-header" id="playing-section">Currently Playing</div>
+          <h2 class="mb-5">The Goods</h2>
+          <span>
+            <button class="btn btn-primary mb-4" id="add-game-btn">Add New Game</button>
+          </span>
+          <div class="game-grid" id="playing-section">
             <div class="game-card">
-              <div class="row g-0">
-                <div class="col-auto">
-                  <div class="game-img">
-                    <img src="./images/elden-ring.jpg" alt="Elden Ring cover" />
+              <div class="game-card-image">
+                <img
+                  src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600&h=400&fit=crop"
+                  alt="Baldur's Gate 3"
+                />
+                <span class="status-badge badge-playing">Playing</span>
+              </div>
+              <div class="game-card-body">
+                <h5 class="game-title">Baldur's Gate 3</h5>
+                <div class="genre-tags">
+                  <span class="genre-tag">RPG</span>
+                  <span class="genre-tag">Turn-Based</span>
+                </div>
+                <div class="game-meta">
+                  <span class="game-meta-tag">2023</span>
+                  <span class="game-meta-tag">PC</span>
+                  <span class="game-meta-tag">$59.99</span>
+                </div>
+                <div class="game-stats">
+                  <div class="stat-item">
+                    <div class="stat-value">45</div>
+                    <div class="stat-label">Hours</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-value">9.5</div>
+                    <div class="stat-label">Rating</div>
                   </div>
                 </div>
-                <div class="col">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                      <h5 class="game-title mb-0">Elden Ring</h5>
-                      <span class="status-badge badge-playing">Playing</span>
-                    </div>
-                    <div class="game-meta">RPG | 2023 | PC</div>
-                    <div class="game-progress">45 hours</div>
-                  </div>
+                <div class="card-actions">
+                  <button class="btn-card-action">Edit</button>
+                  <button class="btn-card-action btn-delete">Delete</button>
                 </div>
               </div>
             </div>
           </div>
-
-          <div class="mb-5">
-            <div class="section-header" id="completed-section">Completed</div>
-          </div>
-
-          <div class="mb-5">
-            <div class="section-header" id="wishlist-section">Wishlist</div>
-          </div>
-
-          <div class="mb-5">
-            <div class="section-header" id="backlog-section">Backlog</div>
-          </div>
-
         </div>
       </div>
     </div>
