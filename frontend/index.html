@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -25,7 +25,9 @@
         <a class="btn btn-outline-primary btn-sm" href="./signup.html">Sign Up</a>
         <a class="btn btn-outline-primary btn-sm" href="./login.html">Log In</a>
         <a class="btn btn-outline-primary btn-sm" href="./account.html">My Account</a>
-        <a class="btn btn-outline-secondary btn-sm" href="./game.html?slug=stardew-valley">Game: Stardew Valley</a>
+        <a class="btn btn-outline-secondary btn-sm" href="./game.html?slug=stardew-valley"
+          >Game: Stardew Valley</a
+        >
       </div>
     </nav>
 
@@ -69,72 +71,138 @@
     </div>
 
     <!--Container for personal game catalogue-->
-    <div class="container" id="user-catalogue">
-      <!--Filter section-->
-      <section>
-        <h2>Your Game Catalogue</h2>
-        <div class="row mb-3" id="games">
-          <div class="col-md-2">
-            <input
-              type="text"
-              id="search-bar"
-              class="form-control"
-              placeholder="Search by title..."
-              id="personalSearch"
-            />
-          </div>
-          <div class="col-md-2">
-            <select id="genre-filter" class="form-select">
-              <option value="">All Genres</option>
-              <option value="Action">Action</option>
-              <option value="Adventure">Adventure</option>
-              <option value="RPG">RPG</option>
-              <option value="Strategy">Strategy</option>
-              <option value="Simulation">Simulation</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <select id="platform-filter" class="form-select">
-              <option value="">All Platforms</option>
-              <option value="PC">PC</option>
-              <option value="Console">Console</option>
-              <option value="Mobile">Mobile</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <select id="status-filter" class="form-select">
-              <option value="">All Statuses</option>
-              <option value="Completed">Completed</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Wishlist">Wishlist</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <button id="clear-filters" class="btn btn-secondary w-100">
-              Clear Filters
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!--Game catalogue section-->
-      <section>
-        <div class="row game-grid" id="game-list">
-          <!-- Game cards will be dynamically inserted here. For now, a physical example-->
-            <div class="col-md-3 mb-4">
-                <div class="card game-card">
-                <div class="card-body">
-                    <h5 class="card-title">Game Title</h5>
-                    <p class="card-text">Genre: Action</p>
-                    <p class="card-text">Platform: PC</p>
-                    <p class="card-text">Status: Completed</p>
-                </div>
-                </div>
+    <div class="container-fluid py-4" id="personal-catalogue">
+      <div class="row">
+        <!--Filter section-->
+        <div class="col-lg-3">
+          <div class="sidebar">
+            <div class="sidebar-header">Filters</div>
+            <div class="filter-section">
+              <label>Search</label>
+              <input type="text" class="form-control" placeholder="Search your games..." />
             </div>
-        </div>
-      </section>
-    </div>
+            <div class="filter-section">
+              <label>Status</label>
+              <select class="form-select" id="status-filter">
+                <option selected>All Statuses</option>
+                <option>Completed</option>
+                <option>Playing</option>
+                <option>Backlog</option>
+                <option>Wishlist</option>
+              </select>
+            </div>
 
+            <div class="filter-section">
+              <label>Genre</label>
+              <select class="form-select" id="genre-filter">
+                <option selected>All Genres</option>
+                <option>Action</option>
+                <option>Adventure</option>
+                <option>RPG</option>
+                <option>Strategy</option>
+                <option>Fighting</option>
+                <option>FPS</option>
+                <option>Platformer</option>
+                <option>Puzzle</option>
+                <option>Racing</option>
+                <option>MMORPG</option>
+                <option>Sandbox</option>
+                <option>Survival</option>
+                <option>Roguelike</option>
+                <option>Horror</option>
+                <option>Sports</option>
+                <option>Simulation</option>
+              </select>
+            </div>
+
+            <div class="filter-section">
+              <label>Platform</label>
+              <select class="form-select" id="platform-filter">
+                <option selected>All Platforms</option>
+                <option>PC</option>
+                <option>PlayStation 5</option>
+                <option>PlayStation 4</option>
+                <option>PlayStation 3</option>
+                <option>PlayStation 2</option>
+                <option>PlayStation</option>
+                <option>PlayStation Vita</option>
+                <option>Xbox Series X</option>
+                <option>Xbox One</option>
+                <option>Xbox 360</option>
+                <option>Nintendo Switch</option>
+                <option>Nintendo Wii U</option>
+                <option>Nintendo Wii</option>
+                <option>Nintendo GameCube</option>
+                <option>Nintendo 64</option>
+                <option>SNES</option>
+                <option>Nintendo 3DS</option>
+                <option>Nintendo DS</option>
+                <option>Game Boy Advance SP</option>
+                <option>Game Boy Advance</option>
+                <option>Game Boy Color</option>
+                <option>Game Boy</option>
+                <option>Mobile</option>
+              </select>
+            </div>
+
+            <div class="filter-section">
+              <label>Sort By</label>
+              <select class="form-select" id="sort-filter">
+                <option selected>Title (A-Z)</option>
+                <option>Title (Z-A)</option>
+                <option>Release Date (Newest)</option>
+                <option>Release Date (Oldest)</option>
+                <option>Hours Played (Most)</option>
+                <option>Hours Played (Least)</option>
+                <option>Price (High to Low)</option>
+                <option>Price (Low to High)</option>
+              </select>
+            </div>
+            <button class="btn btn-reset">Reset All Filters</button>
+          </div>
+        </div>
+
+        <div class="col-lg-9">
+          <h2 class="mb-4">Test</h2>
+
+          <div class="mb-5">
+            <div class="section-header" id="playing-section">Currently Playing</div>
+            <div class="game-card">
+              <div class="row g-0">
+                <div class="col-auto">
+                  <div class="game-img">
+                    <img src="./images/elden-ring.jpg" alt="Elden Ring cover" />
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <h5 class="game-title mb-0">Elden Ring</h5>
+                      <span class="status-badge badge-playing">Playing</span>
+                    </div>
+                    <div class="game-meta">RPG | 2023 | PC</div>
+                    <div class="game-progress">45 hours</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-5">
+            <div class="section-header" id="completed-section">Completed</div>
+          </div>
+
+          <div class="mb-5">
+            <div class="section-header" id="wishlist-section">Wishlist</div>
+          </div>
+
+          <div class="mb-5">
+            <div class="section-header" id="backlog-section">Backlog</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"

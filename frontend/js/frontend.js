@@ -17,13 +17,13 @@ function Games() {
     const gamesDiv = document.getElementById("game-list");
     for (const { title, platform, genre, price } of games) {
       const card = document.createElement("div");
-      card.className = "card game-card mb-3";
+      card.className = "card game-card";
       card.innerHTML = `
                 <div class="card-body">
                     <h5 class="card-title">${title}</h5>
-                    <p class="card-text">Genre: ${genre}</p>
-                    <p class="card-text">Platform:${platform}</p>
-                    <p class="card-text">Price:${price}</p>
+                    <p class="card-text">${genre}</p>
+                    <p class="card-text">${platform}</p>
+                    <p class="card-text">$${price}</p>
                 </div>
                 `;
       gamesDiv.appendChild(card);
