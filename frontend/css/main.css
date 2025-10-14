@@ -491,6 +491,5 @@ a:hover {
 .stat-card .card-text {
   font-size: 0.85rem;
   color: var(--muted);
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }

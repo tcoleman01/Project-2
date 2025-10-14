@@ -79,8 +79,36 @@ function Games() {
       gamesDiv.innerHTML = `<div class="alert alert-danger">Failed to load your games. Bummer.</div>`;
     }
   };
+
+  me.refreshStats = async () => {
+    try {
+      const res = await fetch(`/api/userGames/stats?userId=${userId}`);
+      if (!res.ok) {
+        console.error("Failed to fetch stats", res.status, res.statusText);
+        me.showError({ msg: "Failed to fetch stats", res });
+        return;
+      }
+      const data = await res.json();
+      console.log("Fetched stats:", data);
+
+      const stats = data.stats?.[0] || {};
+      console.log("Stats:", stats);
+      document.getElementById("total-games").innerText = stats.totalGames || 0;
+      document.getElementById("completed-games").innerText = stats.totalCompleted || 0;
+      document.getElementById("hours-logged").innerText = stats.totalHours || 0;
+      document.getElementById("total-spent").innerText =
+        `$${stats.totalSpent?.toFixed(2) || "0.00"}`;
+    } catch (e) {
+      console.error("Error fetching stats", e);
+      document.getElementById("total-games").innerText = "0";
+      document.getElementById("completed-games").innerText = "0";
+      document.getElementById("hours-logged").innerText = "0";
+      document.getElementById("total-spent").innerText = "$0.00";
+    }
+  };
   return me;
 }
 
 const myGames = Games();
 myGames.refreshGames();
+myGames.refreshStats();
