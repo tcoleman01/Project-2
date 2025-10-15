@@ -37,10 +37,10 @@ router.get("/userGames", async (req, res) => {
 
 // POST to add an entry in the userGames collection for a specific user
 router.post("/userGames", async (req, res) => {
-  console.log("Received POST request for api/userGames");
+  console.log("Received POST request for api/userGames:", req.body);
 
   try {
-    const { userId, gameId, status, price, hoursPlayed, personalNotes } = req.body;
+    const { userId, gameId, status, price, hoursPlayed } = req.body;
     if (!userId || !gameId)
       return res.status(400).json({ error: "userId and gameId are required" });
 
@@ -49,13 +49,11 @@ router.post("/userGames", async (req, res) => {
     const goodStatus = validStatuses.includes(status) ? status : "Backlog";
     const goodHours =
       isFinite(Number(hoursPlayed)) && Number(hoursPlayed) >= 0 ? Number(hoursPlayed) : 0;
-    const notes = personalNotes ? String(personalNotes).trim() : "";
     const goodPrice = isFinite(Number(price)) && Number(price) >= 0 ? Number(price) : 0;
 
     // Check if the game exists
     const game = await MyDB.getGameByIdOrSlug(gameId);
     if (!game) return res.status(404).json({ error: "Game not found" });
-
     // Add the game to the user's collection
     const newUserGame = await MyDB.addUserGame({
       userId,
@@ -63,7 +61,6 @@ router.post("/userGames", async (req, res) => {
       status: goodStatus,
       price: goodPrice,
       hoursPlayed: goodHours,
-      personalNotes: notes,
     });
     res.status(201).json({ ok: true, newUserGame });
   } catch (e) {
@@ -83,7 +80,7 @@ router.patch("/userGames/:id", async (req, res) => {
     const { id } = req.params;
     if (!id) return res.status(400).json({ error: "Valid userGame ID is required" });
 
-    const { status, hoursPlayed, personalNotes } = req.body;
+    const { status, hoursPlayed, price } = req.body;
     const updates = {};
 
     // Validate and sanitize our inputs
@@ -98,9 +95,14 @@ router.patch("/userGames/:id", async (req, res) => {
       const hours = Number(hoursPlayed);
       if (isNaN(hours) || hours < 0)
         return res.status(400).json({ error: "hoursPlayed must be a non-negative number" });
+      updates.hoursPlayed = hoursPlayed;
     }
-    updates.hoursPlayed = hoursPlayed;
-    if (personalNotes) updates.personalNotes = String(personalNotes).trim();
+    if (price !== undefined) {
+      const p = Number(price);
+      if (isNaN(p) || p < 0)
+        return res.status(400).json({ error: "price must be a non-negative number" });
+      updates.price = p;
+    }
 
     // Once everythin checks out, update the userGame entry
     const updatedUserGame = await MyDB.updateUserGame(id, updates);
@@ -120,7 +122,7 @@ router.delete("/userGames/:id", async (req, res) => {
   try {
     const ok = await MyDB.deleteUserGame(req.params.id);
     if (!ok) return res.status(404).json({ error: "User game not found" });
-    res.json({ ok: true });
+    res.json({ ok: true, deletedId: req.params.id });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Error deleting game from user profile" });

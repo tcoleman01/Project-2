@@ -6,9 +6,15 @@ const router = express.Router();
 
 // GET all games in the games collection
 router.get("/games", async (req, res) => {
-  console.log("GET all /games");
+  console.log("GET /games", req.query);
   try {
-    const games = await MyDB.getAllGames(); // Fetch all games from DB
+    const q = String(req.query.q || "").trim();
+    let query = {};
+    if (q) {
+      // simple text search on title (case-insensitive substring)
+      query = { title: { $regex: q, $options: "i" } };
+    }
+    const games = await MyDB.getAllGames({ query, pageSize: 50, page: 0 }); // limit results
     res.json({ games });
   } catch (e) {
     console.error(e);

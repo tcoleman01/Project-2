@@ -50,6 +50,7 @@ function MyMongoDB({
     }
   };
 
+  // Create a new game document and add it to the master games collection
   me.createGame = async (doc) => {
     const { client, games } = connect();
     try {
@@ -157,25 +158,43 @@ function MyMongoDB({
     }
   };
 
+  const toObjectId = (id) => {
+    if (!id) return null;
+    try {
+      if (id instanceof ObjectId) return id;
+      if (typeof id === "string" && id.length === 24) return new ObjectId(id);
+      // handle odd cases like { $oid: "..." }
+      if (typeof id === "object" && id.$oid && typeof id.$oid === "string")
+        return new ObjectId(id.$oid);
+      throw new Error(`Invalid ObjectId format: ${JSON.stringify(id)}`);
+    } catch (err) {
+      console.error("❌ toObjectId failed:", id, err);
+      throw err;
+    }
+  };
+
   // === userGames collection CRUD ===
-  me.addUserGame = async (userId, gameId, status, price, hoursPlayed) => {
+  me.addUserGame = async ({ userId, gameId, status, hoursPlayed, price }) => {
     const { client, userGames } = connect();
 
     try {
       await userGames.createIndex({ userId: 1, gameId: 1 }, { unique: true });
+      const parsedUserId = toObjectId(userId);
+      const parsedGameId = toObjectId(gameId);
+      if (!parsedUserId || !parsedGameId)
+        throw new Error("Invalid userId or gameId format. Must be ObjectId or 24-char hex string.");
 
       const doc = {
-        userId: new ObjectId(userId),
-        gameId: new ObjectId(gameId),
+        userId: parsedUserId,
+        gameId: parsedGameId,
         status,
         price,
         hoursPlayed,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-
       const r = await userGames.insertOne(doc);
-      return await userGames.findOne({ _id: r.insertedId });
+      return { _id: r.insertedId, ...doc };
     } finally {
       await client.close();
     }
@@ -187,17 +206,23 @@ function MyMongoDB({
     const { client, userGames } = connect();
 
     try {
-      const safeUpdates = {};
-      const allowedFields = ["status", "price", "hoursPlayed", "personalNotes"];
-      for (const field of allowedFields) {
-        if (field in updates) {
-          safeUpdates[field] = updates[field];
-        }
+      let query;
+      try {
+        query = { _id: new ObjectId(id) };
+      } catch {
+        query = { _id: id }; // fallback if id isn’t a valid ObjectId
       }
-      safeUpdates.updatedAt = new Date();
 
-      await userGames.updateOne({ _id: new ObjectId(id) }, { $set: safeUpdates });
-      return await userGames.findOne({ _id: new ObjectId(id) });
+      console.log("🕵️ updateUserGame query:", query);
+      const result = await userGames.findOneAndUpdate(
+        query,
+        { $set: updates },
+        { returnDocument: "after" }
+      );
+
+      console.log("🕵️ findOneAndUpdate raw result:", result); // Debug log
+
+      return result;
     } finally {
       await client.close();
     }
@@ -339,7 +364,20 @@ function MyMongoDB({
         },
       ];
 
-      return await userGames.aggregate(pipeline).toArray();
+      const result = await userGames.aggregate(pipeline).toArray();
+      // Return a single stats object instead of an array, even if empty
+      return (
+        result[0] || {
+          userId,
+          totalGames: 0,
+          totalCompleted: 0,
+          totalBacklog: 0,
+          totalWishlist: 0,
+          totalPlaying: 0,
+          totalHours: 0,
+          totalSpent: 0,
+        }
+      );
     } catch (error) {
       console.error("Error fetching user game stats:", error);
       throw error;
