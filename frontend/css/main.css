@@ -428,7 +428,7 @@ a:hover {
 /* Auth links (shared style for login/signup/forgot) */
 .auth-link {
   display: inline-block;
-  color: #0d6efd; /* Bootstrap primary blue */
+  color: #63a4ff; 
   font-weight: 600;
   text-decoration: none;
   transition:
@@ -437,8 +437,13 @@ a:hover {
 }
 
 .auth-link:hover {
-  color: #63a4ff; /* lighter hover tone */
-  text-decoration: underline;
+  display: inline-block;
+  color: #63a4ff; 
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    text-decoration 0.2s ease;
 }
 
 
