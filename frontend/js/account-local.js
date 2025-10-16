@@ -1,71 +1,43 @@
-import { getSession } from "./auth-local.js";
+import { getUserIdHeader } from "./auth-local.js";
+const currentUser = getUserIdHeader();
+const MOCK_USER_ID = "200000000000000000000001";
 
-const msg = document.getElementById("msg");
-const show = (t) => { msg.textContent = t || ""; };
-
-const USERS_KEY = "vg_users";
-const SESSION_KEY = "vg_session";
-const getUsers = () => JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-const saveUsers = (arr) => localStorage.setItem(USERS_KEY, JSON.stringify(arr));
-
-function requireAuth() {
-  const session = getSession();
-  if (!session) { location.href = "./login.html"; return null; }           // ← was /login.html
-  const users = getUsers();
-  const me = users.find(u => u.email === session.email);
-  if (!me) { localStorage.removeItem(SESSION_KEY); location.href = "./login.html"; return null; } // ← was /login.html
-  return me;
+async function getUserId() {
+  try {
+    const me = await fetch("/api/users/me", { headers: { "x-user-id": currentUser } }).then(r => r.ok ? r.json() : null);
+    return me?.user?._id || MOCK_USER_ID;
+  } catch { return MOCK_USER_ID; }
 }
 
-const me = requireAuth();
-if (me) {
-  document.querySelector('input[name="email"]').value = me.email;
-  document.querySelector('input[name="username"]').value = me.username;
+function renderReviews(items) {
+  const wrap = document.getElementById("myReviews");
+  if (!wrap) return;
+  wrap.innerHTML = items.length
+    ? items.map(r => `
+        <article class="card p-2 mb-2">
+          <div class="d-flex justify-content-between">
+            <strong>Rating: ${r.rating}/5</strong>
+            <small>${new Date().toLocaleString()}</small>
+          </div>
+          <p class="m-0">${(r.text || "").replace(/</g,"&lt;")}</p>
+        </article>
+      `).join("")
+    : `<p class="text-secondary">You haven't posted any reviews yet.</p>`;
 }
 
-// Save profile
-document.getElementById("profileForm").addEventListener("submit", (e) => {
-  e.preventDefault(); show("");
-  const data = Object.fromEntries(new FormData(e.target));
-  if (data.username.trim().length < 3) return show("Username must be at least 3 chars.");
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return show("Enter a valid email.");
+async function loadMyReviews(userId) {
+  try {
+    const res = await fetch(`/api/users/${encodeURIComponent(userId)}/reviews`);
+    if (!res.ok) throw new Error();
+    const { items } = await res.json();
+    renderReviews(items);
+  } catch {
+    const all = await fetch("/data/mock_reviews.json").then(r => r.json());
+    renderReviews(all.filter(r => (r.userId?.$oid || r.userId) === userId));
+  }
+}
 
-  const users = getUsers();
-  // unique constraints
-  if (users.some(u => u.email === data.email && u.email !== me.email)) return show("Email already in use.");
-  if (users.some(u => u.username === data.username && u.email !== me.email)) return show("Username already in use.");
-
-  const idx = users.findIndex(u => u.email === me.email);
-  users[idx] = { ...users[idx], email: data.email.trim().toLowerCase(), username: data.username.trim(), updatedAt: Date.now() };
-  saveUsers(users);
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ email: users[idx].email }));
-  show("Profile updated.");
-});
-
-// Change password
-document.getElementById("passwordForm").addEventListener("submit", (e) => {
-  e.preventDefault(); show("");
-  const { password } = Object.fromEntries(new FormData(e.target));
-  if (password.length < 8) return show("Password must be at least 8 chars.");
-  const users = getUsers();
-  const idx = users.findIndex(u => u.email === me.email);
-  users[idx] = { ...users[idx], password, updatedAt: Date.now() };
-  saveUsers(users);
-  e.target.reset();
-  show("Password updated.");
-});
-
-// Logout
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.removeItem(SESSION_KEY);
-  location.href = "./login.html";                                          // ← was /login.html
-});
-
-// Delete account
-document.getElementById("deleteBtn").addEventListener("click", () => {
-  if (!confirm("Delete your account? This cannot be undone.")) return;
-  const users = getUsers().filter(u => u.email !== me.email);
-  saveUsers(users);
-  localStorage.removeItem(SESSION_KEY);
-  location.href = "./signup.html";                                         // ← was /signup.html
+window.addEventListener("DOMContentLoaded", async () => {
+  const userId = await getUserId();
+  await loadMyReviews(userId);
 });
