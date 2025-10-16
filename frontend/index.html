@@ -24,17 +24,11 @@
   </div>
 
   <!--  Login button -->
-<a
-  href="user-profile.html"
-  class="btn btn-primary w-100 text-center d-block"
-  onclick="localStorage.setItem('vg_session', JSON.stringify({ email: document.getElementById('email')?.value || 'demo@example.com' }));"
->
-  Log In
-</a>
+<a id="loginLink" class="btn btn-primary w-100 text-center d-block">Log In</a>
 
   <!-- Forgot password + signup links -->
   <p class="text-center mt-3 mb-0">
-    <a href="forgot-password.html" class="auth-link">Forgot your password?</a>
+    <a href="forget-password.html" class="auth-link">Forgot your password?</a>
   </p>
 
   <p class="text-center mt-2 mb-0">
@@ -42,6 +36,29 @@
     <a href="signup.html" class="auth-link">Create an account</a>
   </p>
 </form>
+
+<script>
+  (function () {
+    const link = document.getElementById('loginLink');
+    if (!link) return;
+
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      // ensure minimal session so user-profile.html doesn't redirect back
+      const email = document.getElementById('email')?.value || 'demo@example.com';
+      localStorage.setItem('vg_session', JSON.stringify({ email }));
+
+      // choose path based on host (GitHub Pages vs local)
+      const onGh = location.hostname.endsWith('github.io');
+      const target = onGh
+        ? '/Project-2/frontend/user-profile.html'
+        : 'user-profile.html';
+
+      location.href = target;
+    });
+  })();
+</script>
 
 
     <p id="msg" class="mt-3 text-warning"></p>
