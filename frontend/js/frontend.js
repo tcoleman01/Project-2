@@ -1,4 +1,4 @@
-<// frontend/js/frontend.js
+// frontend/js/frontend.js
 // Renders the user's library + stats from mock JSON on user-profile.html.
 // Targets existing IDs: #game-section, #total-games, #completed-games, #hours-logged, #total-spent
 (function () {
