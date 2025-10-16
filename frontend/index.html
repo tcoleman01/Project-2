@@ -12,29 +12,37 @@
   <main class="container page page--narrow py-4">
     <h1 class="h3 mb-3">Welcome back</h1>
 
-    <form id="loginForm" class="vstack gap-3">
-      <div>
-        <label for="email" class="form-label">Email</label>
-        <input id="email" class="form-control" type="email" name="email" required />
-      </div>
+<form id="loginForm" class="vstack gap-3">
+  <div>
+    <label for="email" class="form-label">Email</label>
+    <input id="email" class="form-control" type="email" name="email" required />
+  </div>
 
-      <div>
-        <label for="password" class="form-label">Password</label>
-        <input id="password" class="form-control" type="password" name="password" required />
-      </div>
+  <div>
+    <label for="password" class="form-label">Password</label>
+    <input id="password" class="form-control" type="password" name="password" required />
+  </div>
 
-      <button class="btn btn-primary w-100" type="submit">Log In</button>
+  <!-- Updated login button -->
+  <button
+    class="btn btn-primary w-100"
+    type="button"
+    onclick="window.location.href='user-profile.html'"
+  >
+    Log In
+  </button>
 
-      <!-- Forgot password + signup links styled to match signup page -->
-      <p class="text-center mt-3 mb-0">
-        <a href="./forgot-password.html" class="auth-link">Forgot your password?</a>
-      </p>
+  <!-- Forgot password + signup links styled to match signup page -->
+  <p class="text-center mt-3 mb-0">
+    <a href="./forgot-password.html" class="auth-link">Forgot your password?</a>
+  </p>
 
-      <p class="text-center mt-2 mb-0">
-        New here?
-        <a href="./signup.html" class="auth-link">Create an account</a>
-      </p>
-    </form>
+  <p class="text-center mt-2 mb-0">
+    New here?
+    <a href="./signup.html" class="auth-link">Create an account</a>
+  </p>
+</form>
+
 
     <p id="msg" class="mt-3 text-warning"></p>
   </main>
