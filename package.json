@@ -1,7 +1,7 @@
 {
   "name": "project-2",
   "version": "1.0.0",
-  "description": "",
+  "description": "**Authors:** Theresa Coleman, Stewart Almeida   **Course:** CS5610 • Project 2",
   "main": "backend.js",
   "type": "module",
   "scripts": {
@@ -35,5 +35,8 @@
     "express": "^5.1.0",
     "mongodb": "6.20",
     "nodemon": "^3.1.10"
+  },
+  "directories": {
+    "doc": "docs"
   }
 }
