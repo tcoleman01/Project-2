@@ -1,371 +1,126 @@
-<!doctype html>
-<html lang="en">
-  <head>
-<script>
-  // Only redirect if no session is set
-  try {
-    const s = JSON.parse(localStorage.getItem('vg_session') || 'null');
-    if (!s || !s.email) {
-      window.location.replace('index.html'); // login page
-    }
-  } catch (e) {
-    window.location.replace('index.html');
+<// frontend/js/frontend.js
+// Renders the user's library + stats from mock JSON on user-profile.html.
+// Targets existing IDs: #game-section, #total-games, #completed-games, #hours-logged, #total-spent
+(function () {
+  const grid = document.getElementById("game-section");
+  if (!grid) return; // only run on user-profile.html
+
+  const elTotal = document.getElementById("total-games");
+  const elDone  = document.getElementById("completed-games");
+  const elHours = document.getElementById("hours-logged");
+  const elSpent = document.getElementById("total-spent");
+
+  // Filters you already have
+  const elStatus = document.getElementById("status-filter");
+  const elSearch = Array.from(document.querySelectorAll("input.form-control"))
+    .find(i => /search your games/i.test(i.placeholder || ""));
+
+  // Use the user present in your mock_user_games.json
+  const MOCK_USER_ID = "200000000000000000000001";
+
+  const getOid = (x) => (x && typeof x === "object" && x.$oid ? x.$oid : x);
+  const fmt2  = (n) => Number(n || 0).toFixed(2);
+
+  async function load(path) {
+    const r = await fetch(path, { cache: "no-store" });
+    if (!r.ok) throw new Error(`Failed to load ${path}`);
+    return r.json();
   }
-</script>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Profile</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-      crossorigin="anonymous"
-    />
-    <link rel="stylesheet" href="./css/main.css" />
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <h1>Personal Page</h1>
-      </header>
-    </div>
 
-    <!-- Quick links to demo pages (add-only) -->
-    <nav class="container my-3">
-      <div class="btn-group flex-wrap" role="group" aria-label="Theresa demo links">
-        <a class="btn btn-outline-primary btn-sm" href="./signup.html">Sign Up</a>
-        <a class="btn btn-outline-primary btn-sm" href="./login.html">Log In</a>
-        <a class="btn btn-outline-primary btn-sm" href="./account.html">My Account</a>
-        <a class="btn btn-outline-secondary btn-sm" href="./game.html?slug=stardew-valley"
-          >Game: Stardew Valley</a
-        >
-      </div>
-    </nav>
+  let base = [], view = [];
 
-    <!--User stats container-->
-    <div class="container" id="user-stats">
-      <h2>Stats. Yours to be exact.</h2>
-      <div class="row">
-        <div class="col-md-3 stat-card">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title" id="statTotalGames"></h5>
-              <p class="card-text">Total # of games</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3 stat-card">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title" id="completed-games"></h5>
-              <p class="card-text">Completed</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3 stat-card">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title" id="statTotalHours"></h5>
-              <p class="card-text">Hours Logged</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3 stat-card">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title" id="statTotalSpent"></h5>
-              <p class="card-text">Total Spent</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  function joinData(userGames, games) {
+    const idx = new Map(games.map(g => [getOid(g._id), g]));
+    return userGames
+      .filter(ug => getOid(ug.userId) === MOCK_USER_ID)
+      .map(ug => {
+        const m = idx.get(getOid(ug.gameId)) || {};
+        return {
+          id: getOid(ug._id),
+          title: m.title || "(Unknown title)",
+          platform: m.platform || "",
+          genre: m.genre || "",
+          status: ug.status || "Backlog",
+          hours: Number(ug.hoursPlayed || 0),
+          spent: ug.moneySpent != null ? Number(ug.moneySpent) : Number(m.price || 0),
+          year: m.year || m.releaseYear || ""
+        };
+      });
+  }
 
-    <!--Container for personal game catalogue-->
-    <div class="container py-4" id="personal-catalogue">
-      <div class="row">
-        <!--Filter section-->
-        <div class="col-lg-3">
-          <div class="sidebar">
-            <div class="sidebar-header">Filters</div>
-            <div class="filter-section">
-              <label>Search</label>
-              <input id="filterSearch" type="text" class="form-control" placeholder="Search your games..." />
+  function render(list) {
+    grid.innerHTML = list.length
+      ? list.map(g => `
+          <div class="card p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h5 class="mb-1">${g.title}</h5>
+                <div class="small text-secondary">${[g.platform, g.genre, g.year].filter(Boolean).join(" • ")}</div>
+              </div>
+              <span class="badge text-bg-dark">${g.status}</span>
             </div>
-            <div class="filter-section">
-              <label>Status</label>
-              <select class="form-select" id="filterStatus">
-                <option selected>All Statuses</option>
-                <option>Completed</option>
-                <option>Playing</option>
-                <option>Backlog</option>
-                <option>Wishlist</option>
-              </select>
+            <div class="mt-2 small">
+              <span><strong>Hours:</strong> ${g.hours}</span>
+              <span class="ms-3"><strong>Spent:</strong> $${fmt2(g.spent)}</span>
             </div>
+          </div>
+        `).join("")
+      : '<p class="text-secondary">No games in your library.</p>';
 
-            <div class="filter-section">
-              <label>Genre</label>
-              <select class="form-select" id="genre-filter">
-                <option selected>All Genres</option>
-                <option>Action</option>
-                <option>Adventure</option>
-                <option>RPG</option>
-                <option>Strategy</option>
-                <option>Fighting</option>
-                <option>FPS</option>
-                <option>Platformer</option>
-                <option>Puzzle</option>
-                <option>Racing</option>
-                <option>MMORPG</option>
-                <option>Sandbox</option>
-                <option>Survival</option>
-                <option>Roguelike</option>
-                <option>Horror</option>
-                <option>Sports</option>
-                <option>Simulation</option>
-              </select>
-            </div>
+    const t = list.reduce((a, g) => {
+      a.c++; a.h += g.hours; a.s += g.spent;
+      if ((g.status || "").toLowerCase() === "completed") a.d++;
+      return a;
+    }, { c:0, h:0, s:0, d:0 });
 
-            <div class="filter-section">
-              <label>Platform</label>
-              <select class="form-select" id="platform-filter">
-                <option selected>All Platforms</option>
-                <option>PC</option>
-                <option>PlayStation 5</option>
-                <option>PlayStation 4</option>
-                <option>PlayStation 3</option>
-                <option>PlayStation 2</option>
-                <option>PlayStation</option>
-                <option>PlayStation Vita</option>
-                <option>Xbox Series X</option>
-                <option>Xbox One</option>
-                <option>Xbox 360</option>
-                <option>Nintendo Switch</option>
-                <option>Nintendo Wii U</option>
-                <option>Nintendo Wii</option>
-                <option>Nintendo GameCube</option>
-                <option>Nintendo 64</option>
-                <option>SNES</option>
-                <option>Nintendo 3DS</option>
-                <option>Nintendo DS</option>
-                <option>Game Boy Advance SP</option>
-                <option>Game Boy Advance</option>
-                <option>Game Boy Color</option>
-                <option>Game Boy</option>
-                <option>Mobile</option>
-              </select>
-            </div>
+    if (elTotal) elTotal.textContent = t.c;
+    if (elDone)  elDone.textContent  = t.d;
+    if (elHours) elHours.textContent = t.h;
+    if (elSpent) elSpent.textContent = fmt2(t.s);
+  }
 
-            <div class="filter-section">
-              <label>Sort By</label>
-              <select class="form-select" id="sort-filter">
-                <option selected>Title (A-Z)</option>
-                <option>Title (Z-A)</option>
-                <option>Release Date (Newest)</option>
-                <option>Release Date (Oldest)</option>
-                <option>Hours Played (Most)</option>
-                <option>Hours Played (Least)</option>
-                <option>Price (High to Low)</option>
-                <option>Price (Low to High)</option>
-              </select>
-            </div>
-            <button class="btn btn-reset">Reset All Filters</button>
-          </div>
-        </div>
+  function applyFilters() {
+    const q = (elSearch?.value || "").toLowerCase();
+    const s = (elStatus?.value || "");
+    view = base.filter(g => {
+      const qok = !q || `${g.title} ${g.platform} ${g.genre}`.toLowerCase().includes(q);
+      const sok = !s || s === "All Statuses" || g.status === s;
+      return qok && sok;
+    });
+    render(view);
+  }
 
-        <div class="col-lg-9">
-          <h2 class="section-header mb-5">The Goods</h2>
-          <span>
-            <button class="btn btn-primary mb-4" id="add-game-btn">Add New Game</button>
-          </span>
-          <div class="game-grid" id="game-section">
-            <!-- Game cards will be dynamically inserted here -->
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-9">
-          <h2 class="section-header mb-5">The Reviews</h2>
-          <span>
-            <button class="btn btn-primary mb-4" id="add-review-btn">Add New Review</button>
-          </span>
-          <div class="reviews-div" id="reviews-section">
-            <p>No reviews yet. Add your first one!</p>
-            <div class="review-card">
-              <div class="review-header">
-                <div>
-                  <h5 class="review-game-title">Game Title</h5>
-                  <div class="review-meta">Reviewed by User123 on 2023-03-15</div>
-                </div>
-                <div class="review-rating-badge">
-                  <div class="review-rating-value">4.5/5</div>
-                  <div class="review-rating-label">Rating</div>
-                </div>
-              </div>
-              <p class="review-text collapsed">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque voluptatem id suscipit perspiciatis iure maiores nesciunt dolorum dolor, facere perferendis modi architecto ex quasi itaque libero ut, consequuntur molestiae? Harum?
-              </p>
-              <button class="show-more-btn" onclick="toggleReview('review-1', this)">Show More</button>
-              <div class="review-actions">
-                <button class="btn-review-action">Edit</button>
-                <button class="btn-review-action btn-review-delete">Delete</button>
-              </div>
-              </div>
-              </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  async function init() {
+    try {
+      const [games, userGames] = await Promise.all([
+        load("./data/mock_games.json"),
+        load("./data/mock_user_games.json"),
+      ]);
+      base = joinData(userGames, games);
+      view = base.slice();
+      render(view);
 
-    <!-- Add Game Modal -->
-    <!-- Current input is title, genre, platform, status, hours logged, and price-->
-    <div
-      class="modal fade"
-      id="add-game-modal"
-      tabindex="-1"
-      aria-labelledby="add-game-modal-label"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="add-game-modal-label">Add a New Game</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <form id="new-game-form">
-              <div class="mb-3">
-                <label for="game-title" class="form-label">Game Title</label>
-                <input type="text" class="form-control" id="game-title" required />
-              </div>
-              <div class="mb-3">
-                <label for="game-genre" class="form-label">Genre</label>
-                <select class="form-select" id="game-genre">
-                  <option>Action</option>
-                  <option>Adventure</option>
-                  <option>RPG</option>
-                  <option>Strategy</option>
-                  <option>Fighting</option>
-                  <option>FPS</option>
-                  <option>Platformer</option>
-                  <option>Puzzle</option>
-                  <option>Racing</option>
-                  <option>MMORPG</option>
-                  <option>Sandbox</option>
-                  <option>Survival</option>
-                  <option>Roguelike</option>
-                  <option>Horror</option>
-                  <option>Sports</option>
-                  <option>Simulation</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="game-platform" class="form-label">Platform</label>
-                <select class="form-select" id="game-platform">
-                  <option>PC</option>
-                  <option>PlayStation 5</option>
-                  <option>PlayStation 4</option>
-                  <option>PlayStation 3</option>
-                  <option>PlayStation 2</option>
-                  <option>PlayStation</option>
-                  <option>PlayStation Vita</option>
-                  <option>Xbox Series X</option>
-                  <option>Xbox One</option>
-                  <option>Xbox 360</option>
-                  <option>Nintendo Switch</option>
-                  <option>Nintendo Wii U</option>
-                  <option>Nintendo Wii</option>
-                  <option>Nintendo GameCube</option>
-                  <option>Nintendo 64</option>
-                  <option>SNES</option>
-                  <option>Nintendo 3DS</option>
-                  <option>Nintendo DS</option>
-                  <option>Game Boy Advance SP</option>
-                  <option>Game Boy Advance</option>
-                  <option>Game Boy Color</option>
-                  <option>Game Boy</option>
-                  <option>Mobile</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="game-status" class="form-label">Status</label>
-                <select class="form-select" id="game-status">
-                  <option value="Playing" selected>Playing</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Backlog">Backlog</option>
-                  <option value="Wishlist">Wishlist</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="game-hours" class="form-label">Hours Logged</label>
-                <input type="number" class="form-control" id="game-hours" min="0" value="0" />
-              </div>
-              <div class="mb-3">
-                <label for="game-price" class="form-label">Price</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="game-price"
-                  min="0"
-                  step="0.01"
-                  value="0"
-                />
-              </div>
-            
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-success" id="submit-add-game">Submit</button>
-          </div>
-          </div>
-          </form>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Edit Game Modal -->
-    <div class="modal fade" id="edit-game-modal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Edit Game</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <form id="edit-game-form">
-          <div class="mb-3">
-            <label class="form-label">Status</label>
-            <select id="edit-status" class="form-select">
-              <option>Playing</option>
-              <option>Completed</option>
-              <option>Backlog</option>
-              <option>Wishlist</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Hours Played</label>
-            <input id="edit-hours" type="number" min="0" class="form-control">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Price Paid</label>
-            <input id="edit-price" type="number" min="0" step="0.01" class="form-control">
-          </div>
-          <button id="save-edit-btn" class="btn btn-primary">Save</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-      crossorigin="anonymous"
-    ></script>
-    <script type="module" src="./js/frontend.js"></script>
-  </body>
-</html>
+      elSearch && elSearch.addEventListener("input", applyFilters);
+      elStatus && elStatus.addEventListener("change", applyFilters);
+
+      // Optional: auto-refresh if your add/delete buttons dispatch this event
+      document.addEventListener("userLibraryChanged", async () => {
+        try {
+          const [g2, ug2] = await Promise.all([
+            load("./data/mock_games.json"),
+            load("./data/mock_user_games.json"),
+          ]);
+          base = joinData(ug2, g2);
+          applyFilters();
+        } catch (e) {
+          console.warn("Refresh failed", e);
+        }
+      });
+    } catch (e) {
+      console.warn(e);
+      grid.innerHTML = '<p class="text-warning">Could not load mock data.</p>';
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", init);
+})();
