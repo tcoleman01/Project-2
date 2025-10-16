@@ -20,7 +20,7 @@ function Games() {
     for (const g of games) {
       const game = g.gameDetails || {};
       const { title, platform, genre, price, year } = game;
-      const status = g.status || "Backlog";
+      const status = g.status;
       const hoursPlayed = g.hoursPlayed || 0;
       const userRating = g.userReview?.rating || "-";
       const card = document.createElement("div");
@@ -84,7 +84,7 @@ function Games() {
 
   me.refreshStats = async () => {
     try {
-      const res = await fetch(`/api/userGames/stats?userId=${userId}`);
+      const res = await fetch(`/api/userGames/stats/${userId}`);
       if (!res.ok) {
         console.error("Failed to fetch stats", res.status, res.statusText);
         me.showError({ msg: "Failed to fetch stats", res });
@@ -109,236 +109,115 @@ function Games() {
     }
   };
 
-  // === Add Game Modal + Autocomplete (uses #add-game-modal) ===
   me.addGameFormModal = () => {
     const modalEl = document.getElementById("add-game-modal");
-    if (!modalEl) {
-      console.error("addGameFormModal: modal element #add-game-modal not found");
-      return;
-    }
-    if (!window.bootstrap || !window.bootstrap.Modal) {
-      console.error("Bootstrap Modal not available on window.bootstrap");
-      return;
-    }
+    if (!modalEl || !window.bootstrap?.Modal)
+      return console.error("Modal missing or Bootstrap not loaded");
 
-    const addGameModal = new bootstrap.Modal(modalEl);
-
-    // Elements inside modal
-    const titleInput = document.getElementById("game-title");
-    const genreInput = document.getElementById("game-genre");
-    const platformInput = document.getElementById("game-platform");
-    const hoursInput = document.getElementById("game-hours");
-    const priceInput = document.getElementById("game-price");
-    const submitBtn = document.getElementById("submit-add-game");
+    const modal = new bootstrap.Modal(modalEl);
     const form = document.getElementById("new-game-form");
 
-    // Suggestion dropdown container
-    let suggestionsContainer = null;
-    const ensureSuggestionsContainer = () => {
-      if (suggestionsContainer) return suggestionsContainer;
-      suggestionsContainer = document.createElement("ul");
-      suggestionsContainer.className = "list-group position-absolute";
-      suggestionsContainer.style.zIndex = 1055;
-      suggestionsContainer.style.width = "100%";
-      suggestionsContainer.style.maxHeight = "200px";
-      suggestionsContainer.style.overflow = "auto";
-      suggestionsContainer.id = "game-suggestions";
-      titleInput.parentElement.style.position = "relative";
-      titleInput.parentElement.appendChild(suggestionsContainer);
-      return suggestionsContainer;
-    };
+    const titleInput = form.querySelector("#game-title");
+    const genreInput = form.querySelector("#game-genre");
+    const platformInput = form.querySelector("#game-platform");
+    const hoursInput = form.querySelector("#game-hours");
+    const priceInput = form.querySelector("#game-price");
+    const statusInput = form.querySelector("#game-status");
 
-    // Debounce helper
-    let debounceTimer = null;
-    const debounce = (fn, wait = 250) => {
+    let selectedGame = null;
+    const suggestionsEl = document.createElement("ul");
+    suggestionsEl.className = "list-group position-absolute w-100";
+    suggestionsEl.style.zIndex = "1055";
+    titleInput.parentElement.style.position = "relative";
+    titleInput.parentElement.appendChild(suggestionsEl);
+
+    // Debounced game search
+    const debounce = (fn, ms = 250) => {
+      let timer;
       return (...args) => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => fn(...args), wait);
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
       };
     };
 
-    // State
-    let selectedGame = null;
-    let suggestionItems = [];
-
-    const escapeHtml = (str) =>
-      !str && str !== 0
-        ? ""
-        : String(str)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-
-    const renderSuggestions = (games) => {
-      const ul = ensureSuggestionsContainer();
-      ul.innerHTML = "";
-      suggestionItems = [];
-
-      if (!games?.length) {
-        ul.style.display = "none";
-        return;
-      }
-
-      for (const g of games) {
+    const renderSuggestions = (games = []) => {
+      suggestionsEl.innerHTML = "";
+      if (!games.length) return (suggestionsEl.style.display = "none");
+      games.forEach((g) => {
         const li = document.createElement("li");
         li.className = "list-group-item list-group-item-action";
-        li.tabIndex = 0;
-        li.dataset.gameId = g._id;
-        li.innerHTML = `<strong>${escapeHtml(g.title)}</strong> <small class="text-muted"> — ${escapeHtml(g.platform || "")} ${g.year ? "(" + g.year + ")" : ""}</small>`;
-        li.addEventListener("click", () => chooseSuggestion(g));
-        li.addEventListener("keydown", (ev) => {
-          if (ev.key === "Enter") {
-            ev.preventDefault();
-            chooseSuggestion(g);
-          }
-        });
-        ul.appendChild(li);
-        suggestionItems.push(li);
+        li.textContent = `${g.title} — ${g.platform || ""} (${g.year || "N/A"})`;
+        li.onclick = () => selectGame(g);
+        suggestionsEl.appendChild(li);
+      });
+      suggestionsEl.style.display = "block";
+    };
+
+    const searchGames = debounce(async (q) => {
+      const term = q.trim();
+      if (!term) return renderSuggestions([]);
+      try {
+        const res = await fetch(`/api/games?q=${encodeURIComponent(term)}`);
+        const data = await res.json();
+        renderSuggestions(data.games?.slice(0, 20));
+      } catch {
+        renderSuggestions([]);
       }
-      ul.style.display = "block";
+    });
+
+    const selectGame = (g) => {
+      selectedGame = g;
+      titleInput.value = g.title;
+      genreInput.value = g.genre || "";
+      platformInput.value = g.platform || "";
+      priceInput.value = g.price?.toFixed(2) || 0;
+      genreInput.readOnly = platformInput.readOnly = true;
+      suggestionsEl.style.display = "none";
     };
 
-    const chooseSuggestion = (game) => {
-      selectedGame = game;
-      titleInput.value = game.title || "";
-      genreInput.value = game.genre || "";
-      platformInput.value = game.platform || "";
-      priceInput.value = (game.price ?? 0).toFixed
-        ? Number(game.price).toFixed(2)
-        : (game.price ?? 0);
-      hoursInput.value = 0;
-
-      genreInput.readOnly = true;
-      platformInput.readOnly = true;
-
-      const ul = document.getElementById("game-suggestions");
-      if (ul) ul.style.display = "none";
-      hoursInput.focus();
-    };
-
-    titleInput.addEventListener("input", () => {
+    titleInput.addEventListener("input", (e) => {
       selectedGame = null;
-      genreInput.readOnly = false;
-      platformInput.readOnly = false;
-      scheduleSearch(titleInput.value);
+      genreInput.readOnly = platformInput.readOnly = false;
+      searchGames(e.target.value);
     });
 
     document.addEventListener("click", (e) => {
-      const ul = document.getElementById("game-suggestions");
-      if (!ul) return;
-      if (!ul.contains(e.target) && e.target !== titleInput) {
-        ul.style.display = "none";
-      }
+      if (!suggestionsEl.contains(e.target) && e.target !== titleInput)
+        suggestionsEl.style.display = "none";
     });
 
-    titleInput.addEventListener("keydown", (e) => {
-      const ul = document.getElementById("game-suggestions");
-      if (!ul || ul.style.display === "none") return;
-      const focusIndex = suggestionItems.findIndex((li) => li === document.activeElement);
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        const next = suggestionItems[(focusIndex + 1) % suggestionItems.length];
-        if (next) next.focus();
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        const prev =
-          suggestionItems[(focusIndex - 1 + suggestionItems.length) % suggestionItems.length];
-        if (prev) prev.focus();
-      }
-    });
-
-    const searchGames = async (q) => {
-      try {
-        const term = String(q || "").trim();
-        if (!term) {
-          renderSuggestions([]);
-          return;
-        }
-        const res = await fetch(`/api/games?q=${encodeURIComponent(term)}`);
-        if (!res.ok) {
-          console.error("Game search failed", res.status);
-          renderSuggestions([]);
-          return;
-        }
-        const payload = await res.json();
-        const results = payload.games || [];
-        renderSuggestions(results.slice(0, 20));
-      } catch (err) {
-        console.error("Search error", err);
-        renderSuggestions([]);
-      }
-    };
-
-    const scheduleSearch = debounce(searchGames, 200);
-
-    submitBtn.addEventListener("click", async (ev) => {
+    form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
-
-      if (!selectedGame) {
-        alert("Please select a game from the list.");
-        titleInput.focus();
-        return;
-      }
-
-      const userId = "200000000000000000000001"; // replace with real user id later
-      const gameId = selectedGame._id?.$oid || selectedGame._id;
-      const hours = Number(hoursInput.value) || 0;
-      const pricePaid = Number(priceInput.value) || 0;
+      if (!selectedGame) return alert("Please select a game.");
 
       const payload = {
-        userId,
-        gameId,
-        status: "Backlog",
-        hoursPlayed: hours,
-        price: pricePaid,
+        userId: "200000000000000000000001", // Example userId for testing
+        gameId: selectedGame._id?.$oid || selectedGame._id,
+        status: statusInput.value,
+        hoursPlayed: Number(hoursInput.value) || 0,
+        moneySpent: Number(priceInput.value) || 0,
       };
 
       try {
-        const res = await fetch("/api/userGames", {
+        const res = await fetch(`/api/userGames/userId/${payload.userId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-
         const data = await res.json();
-
-        if (!res.ok) {
-          console.error("Failed to add game to profile", data);
-          alert("Failed to add game: " + (data.error || res.statusText));
-          return;
-        }
-
-        addGameModal.hide();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        modal.hide();
         form.reset();
         selectedGame = null;
-        const ul = document.getElementById("game-suggestions");
-        if (ul) ul.style.display = "none";
-
         await me.refreshGames();
         await me.refreshStats();
       } catch (err) {
-        console.error("Error adding game", err);
-        alert("Server error — see console.");
+        console.error("Error adding game:", err);
+        alert("Failed to add game.");
       }
     });
 
-    modalEl.addEventListener("show.bs.modal", () => {
-      form.reset();
-      selectedGame = null;
-      const ul = document.getElementById("game-suggestions");
-      if (ul) ul.style.display = "none";
-      genreInput.readOnly = false;
-      platformInput.readOnly = false;
-      titleInput.focus();
-    });
-
-    // Connect the "Add New Game" button to open modal
-    const openBtn = document.getElementById("add-game-btn");
-    if (openBtn) {
-      openBtn.addEventListener("click", () => addGameModal.show());
-    }
+    document.getElementById("add-game-btn")?.addEventListener("click", () => modal.show());
   };
 
   document.addEventListener("click", (e) => {
@@ -426,7 +305,7 @@ function Games() {
       await me.refreshGames();
       await me.refreshStats();
     } catch (err) {
-      console.error("❌ Error deleting game:", err);
+      console.error("Error deleting game:", err);
     }
   };
 
