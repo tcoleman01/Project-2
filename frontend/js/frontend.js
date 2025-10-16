@@ -1,226 +1,371 @@
-// frontend/js/frontend.js
-import { getUserIdHeader, getSession } from "./auth-local.js";
+<!doctype html>
+<html lang="en">
+  <head>
+<script>
+  // Only redirect if no session is set
+  try {
+    const s = JSON.parse(localStorage.getItem('vg_session') || 'null');
+    if (!s || !s.email) {
+      window.location.replace('index.html'); // login page
+    }
+  } catch (e) {
+    window.location.replace('index.html');
+  }
+</script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Personal Page</h1>
+      </header>
+    </div>
 
-function Library() {
-  const me = {};
-  const userIdHeader = getUserIdHeader();
-  const headers = { "Content-Type": "application/json", "x-user-id": userIdHeader };
-  const MOCK_USER_ID = "200000000000000000000001";
+    <!-- Quick links to demo pages (add-only) -->
+    <nav class="container my-3">
+      <div class="btn-group flex-wrap" role="group" aria-label="Theresa demo links">
+        <a class="btn btn-outline-primary btn-sm" href="./signup.html">Sign Up</a>
+        <a class="btn btn-outline-primary btn-sm" href="./login.html">Log In</a>
+        <a class="btn btn-outline-primary btn-sm" href="./account.html">My Account</a>
+        <a class="btn btn-outline-secondary btn-sm" href="./game.html?slug=stardew-valley"
+          >Game: Stardew Valley</a
+        >
+      </div>
+    </nav>
 
-  let userGamesCache = [];
-  let gamesIndex = new Map();
-
-  const getOid = (x) => (x && typeof x === "object" && x.$oid ? x.$oid : x);
-  const loadMock = (p) =>
-    fetch(p, { cache: "no-store" }).then((r) => {
-      if (!r.ok) throw new Error(p);
-      return r.json();
-    });
-
-  // ===== Render Stats =====
-  me.renderStats = (stats = {}) => {
-    const g = (id) => document.getElementById(id);
-    if (g("statTotalGames")) g("statTotalGames").textContent = stats.totalGames ?? 0;
-    if (g("statTotalHours")) g("statTotalHours").textContent = stats.totalHours ?? 0;
-    if (g("statTotalSpent")) g("statTotalSpent").textContent = (stats.totalSpend ?? 0).toFixed(2);
-  };
-
-  // ===== Render Games =====
-  me.renderGames = () => {
-    const list = document.getElementById("gamesList") || document.getElementById("game-section");
-    if (!list) return;
-
-    const status = document.getElementById("filterStatus")?.value || "";
-    const q = (document.getElementById("filterSearch")?.value || "").toLowerCase();
-
-    const filtered = userGamesCache.filter((g) => {
-      const statusOk = !status || g.status === status;
-      const hay = `${g.title || ""} ${g.platform || ""} ${g.genre || ""}`.toLowerCase();
-      const searchOk = !q || hay.includes(q);
-      return statusOk && searchOk;
-    });
-
-    list.innerHTML = filtered.length
-      ? filtered
-          .map(
-            (g) => `
-          <div class="col-12 col-md-6 col-lg-4">
-            <div class="card p-3">
-              <h5>${g.title || "Untitled Game"}</h5>
-              <p class="mb-1"><strong>Status:</strong> ${g.status || "Backlog"}</p>
-              <p class="mb-1"><strong>Hours:</strong> ${g.hoursPlayed || 0}</p>
-              <p class="mb-1"><strong>Price:</strong> $${Number(g.price || 0).toFixed(2)}</p>
-              <div class="d-flex gap-2 mt-2">
-                <button class="btn btn-sm btn-outline-primary edit-btn"
-                  data-id="${g._id}" data-status="${g.status}" data-hours="${g.hoursPlayed}" data-price="${g.price}">
-                  Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${g._id}">Delete</button>
-              </div>
+    <!--User stats container-->
+    <div class="container" id="user-stats">
+      <h2>Stats. Yours to be exact.</h2>
+      <div class="row">
+        <div class="col-md-3 stat-card">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title" id="statTotalGames"></h5>
+              <p class="card-text">Total # of games</p>
             </div>
           </div>
-        `
-          )
-          .join("")
-      : `<p class="text-secondary">No games found.</p>`;
-  };
+        </div>
+        <div class="col-md-3 stat-card">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title" id="completed-games"></h5>
+              <p class="card-text">Completed</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 stat-card">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title" id="statTotalHours"></h5>
+              <p class="card-text">Hours Logged</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 stat-card">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title" id="statTotalSpent"></h5>
+              <p class="card-text">Total Spent</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  // ===== Load User Games =====
-  me.refreshGames = async () => {
-    try {
-      const res = await fetch(`/api/userGames?userId=${encodeURIComponent(userIdHeader)}`);
-      if (!res.ok) throw res;
-      const { items } = await res.json();
-      userGamesCache = items.map((x) => ({
-        _id: x._id,
-        title: x.title || x.gameTitle || "(Unknown title)",
-        platform: x.platform || "",
-        genre: x.genre || "",
-        status: x.status || "Backlog",
-        hoursPlayed: x.hoursPlayed || 0,
-        price: x.price || 0,
-      }));
-      me.renderGames();
-    } catch {
-      const [games, userGames] = await Promise.all([
-        loadMock("/data/mock_games.json"),
-        loadMock("/data/mock_user_games.json"),
-      ]);
-      gamesIndex = new Map(games.map((g) => [getOid(g._id), g]));
-      const sess = getSession();
-      const sessId = sess?.userId || sess?.email;
-      const effectiveUserId =
-        typeof sessId === "string" && !sessId?.includes("@") ? sessId : MOCK_USER_ID;
+    <!--Container for personal game catalogue-->
+    <div class="container py-4" id="personal-catalogue">
+      <div class="row">
+        <!--Filter section-->
+        <div class="col-lg-3">
+          <div class="sidebar">
+            <div class="sidebar-header">Filters</div>
+            <div class="filter-section">
+              <label>Search</label>
+              <input id="filterSearch" type="text" class="form-control" placeholder="Search your games..." />
+            </div>
+            <div class="filter-section">
+              <label>Status</label>
+              <select class="form-select" id="filterStatus">
+                <option selected>All Statuses</option>
+                <option>Completed</option>
+                <option>Playing</option>
+                <option>Backlog</option>
+                <option>Wishlist</option>
+              </select>
+            </div>
 
-      userGamesCache = userGames
-        .filter((ug) => getOid(ug.userId) === effectiveUserId)
-        .map((ug) => {
-          const game = gamesIndex.get(getOid(ug.gameId)) || {};
-          return {
-            _id: getOid(ug._id),
-            title: game.title || "(Unknown title)",
-            platform: game.platform || "",
-            genre: game.genre || "",
-            status: ug.status || "Backlog",
-            hoursPlayed: ug.hoursPlayed || 0,
-            price: game.price || 0,
-          };
-        });
-      me.renderGames();
-    }
-  };
+            <div class="filter-section">
+              <label>Genre</label>
+              <select class="form-select" id="genre-filter">
+                <option selected>All Genres</option>
+                <option>Action</option>
+                <option>Adventure</option>
+                <option>RPG</option>
+                <option>Strategy</option>
+                <option>Fighting</option>
+                <option>FPS</option>
+                <option>Platformer</option>
+                <option>Puzzle</option>
+                <option>Racing</option>
+                <option>MMORPG</option>
+                <option>Sandbox</option>
+                <option>Survival</option>
+                <option>Roguelike</option>
+                <option>Horror</option>
+                <option>Sports</option>
+                <option>Simulation</option>
+              </select>
+            </div>
 
-  // ===== Load Stats =====
-  me.refreshStats = async () => {
-    try {
-      const res = await fetch(`/api/userGames/stats?userId=${encodeURIComponent(userIdHeader)}`);
-      if (!res.ok) throw res;
-      const { stats } = await res.json();
-      me.renderStats(stats);
-    } catch {
-      if (!userGamesCache.length) await me.refreshGames();
-      const totals = userGamesCache.reduce(
-        (a, g) => ({
-          totalGames: a.totalGames + 1,
-          totalHours: a.totalHours + (Number(g.hoursPlayed) || 0),
-          totalSpend: a.totalSpend + (Number(g.price) || 0),
-        }),
-        { totalGames: 0, totalHours: 0, totalSpend: 0 }
-      );
-      me.renderStats(totals);
-    }
-  };
+            <div class="filter-section">
+              <label>Platform</label>
+              <select class="form-select" id="platform-filter">
+                <option selected>All Platforms</option>
+                <option>PC</option>
+                <option>PlayStation 5</option>
+                <option>PlayStation 4</option>
+                <option>PlayStation 3</option>
+                <option>PlayStation 2</option>
+                <option>PlayStation</option>
+                <option>PlayStation Vita</option>
+                <option>Xbox Series X</option>
+                <option>Xbox One</option>
+                <option>Xbox 360</option>
+                <option>Nintendo Switch</option>
+                <option>Nintendo Wii U</option>
+                <option>Nintendo Wii</option>
+                <option>Nintendo GameCube</option>
+                <option>Nintendo 64</option>
+                <option>SNES</option>
+                <option>Nintendo 3DS</option>
+                <option>Nintendo DS</option>
+                <option>Game Boy Advance SP</option>
+                <option>Game Boy Advance</option>
+                <option>Game Boy Color</option>
+                <option>Game Boy</option>
+                <option>Mobile</option>
+              </select>
+            </div>
 
-  // ===== Add Game Form =====
-  me.addGameFormModal = () => {
-    const form = document.getElementById("addGameForm");
-    if (!form) return;
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const data = Object.fromEntries(new FormData(form));
-      try {
-        const res = await fetch("/api/userGames", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            gameId: data.gameId,
-            status: data.status || "Backlog",
-            price: data.price || 0,
-            hoursPlayed: data.hoursPlayed || 0,
-          }),
-        });
-        if (!res.ok) throw res;
-        form.reset();
-        await me.refreshGames();
-        await me.refreshStats();
-      } catch {
-        alert("Demo mode: cannot persist to mock files.");
-      }
-    });
-  };
+            <div class="filter-section">
+              <label>Sort By</label>
+              <select class="form-select" id="sort-filter">
+                <option selected>Title (A-Z)</option>
+                <option>Title (Z-A)</option>
+                <option>Release Date (Newest)</option>
+                <option>Release Date (Oldest)</option>
+                <option>Hours Played (Most)</option>
+                <option>Hours Played (Least)</option>
+                <option>Price (High to Low)</option>
+                <option>Price (Low to High)</option>
+              </select>
+            </div>
+            <button class="btn btn-reset">Reset All Filters</button>
+          </div>
+        </div>
 
-  // ===== Update & Delete =====
-  me.updateGame = async (id, patch) => {
-    try {
-      const res = await fetch(`/api/userGames/${id}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify(patch),
-      });
-      if (!res.ok) throw res;
-      await me.refreshGames();
-      await me.refreshStats();
-    } catch {
-      alert("Demo mode: cannot persist to mock files.");
-    }
-  };
+        <div class="col-lg-9">
+          <h2 class="section-header mb-5">The Goods</h2>
+          <span>
+            <button class="btn btn-primary mb-4" id="add-game-btn">Add New Game</button>
+          </span>
+          <div class="game-grid" id="game-section">
+            <!-- Game cards will be dynamically inserted here -->
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-9">
+          <h2 class="section-header mb-5">The Reviews</h2>
+          <span>
+            <button class="btn btn-primary mb-4" id="add-review-btn">Add New Review</button>
+          </span>
+          <div class="reviews-div" id="reviews-section">
+            <p>No reviews yet. Add your first one!</p>
+            <div class="review-card">
+              <div class="review-header">
+                <div>
+                  <h5 class="review-game-title">Game Title</h5>
+                  <div class="review-meta">Reviewed by User123 on 2023-03-15</div>
+                </div>
+                <div class="review-rating-badge">
+                  <div class="review-rating-value">4.5/5</div>
+                  <div class="review-rating-label">Rating</div>
+                </div>
+              </div>
+              <p class="review-text collapsed">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque voluptatem id suscipit perspiciatis iure maiores nesciunt dolorum dolor, facere perferendis modi architecto ex quasi itaque libero ut, consequuntur molestiae? Harum?
+              </p>
+              <button class="show-more-btn" onclick="toggleReview('review-1', this)">Show More</button>
+              <div class="review-actions">
+                <button class="btn-review-action">Edit</button>
+                <button class="btn-review-action btn-review-delete">Delete</button>
+              </div>
+              </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  me.deleteGame = async (id) => {
-    try {
-      const res = await fetch(`/api/userGames/${id}`, { method: "DELETE", headers });
-      if (!res.ok) throw res;
-      await me.refreshGames();
-      await me.refreshStats();
-    } catch {
-      alert("Demo mode: cannot persist to mock files.");
-    }
-  };
-
-  return me;
-}
-
-// ===== Initialize =====
-const myLib = Library();
-document.getElementById("filterStatus")?.addEventListener("change", () => myLib.renderGames());
-document.getElementById("filterSearch")?.addEventListener("input", () => myLib.renderGames());
-document.addEventListener("click", (e) => {
-  const del = e.target.closest(".delete-btn");
-  if (del) myLib.deleteGame(del.dataset.id);
-});
-
-const editForm = document.getElementById("editGameForm");
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".edit-btn");
-  if (!btn || !editForm) return;
-  editForm.id.value = btn.dataset.id;
-  editForm.status.value = btn.dataset.status || "Backlog";
-  editForm.hoursPlayed.value = btn.dataset.hours || 0;
-  editForm.price.value = btn.dataset.price || 0;
-  document.getElementById("editGameModal").style.display = "block";
-});
-
-editForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  await myLib.updateGame(editForm.id.value, {
-    status: editForm.status.value,
-    hoursPlayed: editForm.hoursPlayed.value,
-    price: editForm.price.value,
-  });
-  document.getElementById("editGameModal").style.display = "none";
-});
-
-window.addEventListener("DOMContentLoaded", async () => {
-  await myLib.refreshGames();
-  await myLib.refreshStats();
-  myLib.addGameFormModal();
-});
+    <!-- Add Game Modal -->
+    <!-- Current input is title, genre, platform, status, hours logged, and price-->
+    <div
+      class="modal fade"
+      id="add-game-modal"
+      tabindex="-1"
+      aria-labelledby="add-game-modal-label"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="add-game-modal-label">Add a New Game</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="new-game-form">
+              <div class="mb-3">
+                <label for="game-title" class="form-label">Game Title</label>
+                <input type="text" class="form-control" id="game-title" required />
+              </div>
+              <div class="mb-3">
+                <label for="game-genre" class="form-label">Genre</label>
+                <select class="form-select" id="game-genre">
+                  <option>Action</option>
+                  <option>Adventure</option>
+                  <option>RPG</option>
+                  <option>Strategy</option>
+                  <option>Fighting</option>
+                  <option>FPS</option>
+                  <option>Platformer</option>
+                  <option>Puzzle</option>
+                  <option>Racing</option>
+                  <option>MMORPG</option>
+                  <option>Sandbox</option>
+                  <option>Survival</option>
+                  <option>Roguelike</option>
+                  <option>Horror</option>
+                  <option>Sports</option>
+                  <option>Simulation</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="game-platform" class="form-label">Platform</label>
+                <select class="form-select" id="game-platform">
+                  <option>PC</option>
+                  <option>PlayStation 5</option>
+                  <option>PlayStation 4</option>
+                  <option>PlayStation 3</option>
+                  <option>PlayStation 2</option>
+                  <option>PlayStation</option>
+                  <option>PlayStation Vita</option>
+                  <option>Xbox Series X</option>
+                  <option>Xbox One</option>
+                  <option>Xbox 360</option>
+                  <option>Nintendo Switch</option>
+                  <option>Nintendo Wii U</option>
+                  <option>Nintendo Wii</option>
+                  <option>Nintendo GameCube</option>
+                  <option>Nintendo 64</option>
+                  <option>SNES</option>
+                  <option>Nintendo 3DS</option>
+                  <option>Nintendo DS</option>
+                  <option>Game Boy Advance SP</option>
+                  <option>Game Boy Advance</option>
+                  <option>Game Boy Color</option>
+                  <option>Game Boy</option>
+                  <option>Mobile</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="game-status" class="form-label">Status</label>
+                <select class="form-select" id="game-status">
+                  <option value="Playing" selected>Playing</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Backlog">Backlog</option>
+                  <option value="Wishlist">Wishlist</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="game-hours" class="form-label">Hours Logged</label>
+                <input type="number" class="form-control" id="game-hours" min="0" value="0" />
+              </div>
+              <div class="mb-3">
+                <label for="game-price" class="form-label">Price</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="game-price"
+                  min="0"
+                  step="0.01"
+                  value="0"
+                />
+              </div>
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success" id="submit-add-game">Submit</button>
+          </div>
+          </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Edit Game Modal -->
+    <div class="modal fade" id="edit-game-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Game</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-game-form">
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select id="edit-status" class="form-select">
+              <option>Playing</option>
+              <option>Completed</option>
+              <option>Backlog</option>
+              <option>Wishlist</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Hours Played</label>
+            <input id="edit-hours" type="number" min="0" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Price Paid</label>
+            <input id="edit-price" type="number" min="0" step="0.01" class="form-control">
+          </div>
+          <button id="save-edit-btn" class="btn btn-primary">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="./js/frontend.js"></script>
+  </body>
+</html>
