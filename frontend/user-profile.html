@@ -1,10 +1,15 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script>
-  // Simple redirect for GitHub Pages
-  if (!location.href.includes("login.html")) {
-    window.location.replace("./login.html");
+<script>
+  // Only redirect if no session is set
+  try {
+    const s = JSON.parse(localStorage.getItem('vg_session') || 'null');
+    if (!s || !s.email) {
+      window.location.replace('index.html'); // login page
+    }
+  } catch (e) {
+    window.location.replace('index.html');
   }
 </script>
     <meta charset="UTF-8" />

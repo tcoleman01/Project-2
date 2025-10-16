@@ -24,13 +24,13 @@
   </div>
 
   <!--  Login button -->
-  <button
-    class="btn btn-primary w-100"
-    type="button"
-    onclick="window.location.href='frontend/user-profile.html'"
-  >
-    Log In
-  </button>
+<a
+  href="user-profile.html"
+  class="btn btn-primary w-100 text-center d-block"
+  onclick="localStorage.setItem('vg_session', JSON.stringify({ email: document.getElementById('email')?.value || 'demo@example.com' }));"
+>
+  Log In
+</a>
 
   <!-- Forgot password + signup links -->
   <p class="text-center mt-3 mb-0">
