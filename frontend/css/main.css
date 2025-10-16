@@ -66,6 +66,16 @@ h2 {
   font-size: clamp(1.1rem, 0.9rem + 1.5vw, 1.5rem);
 }
 
+.section-header {
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
 h1::after {
   content: "";
   display: block;
@@ -161,13 +171,14 @@ a:hover {
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(6px);
   box-shadow: var(--shadow);
-  position: sticky;
+  
   top: 20px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
 }
 
-.sidebar-header {
+.sidebar-header,
+.modal-header {
   color: var(--text);
   font-size: 1.1rem;
   font-weight: 600;
@@ -184,7 +195,8 @@ a:hover {
   margin-bottom: 1.5rem;
 }
 
-.filter-section label {
+.filter-section label,
+#add-game-modal .form-label {
   color: var(--muted);
   font-size: 0.85rem;
   font-weight: 600;
@@ -196,18 +208,18 @@ a:hover {
 
 .sidebar .form-control,
 .sidebar .form-select {
-  background: var(--surface) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: var(--text) !important;
-  border-radius: 14px !important;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  border-radius: 14px;
   padding: 0.6rem 0.75rem;
   margin-bottom: 0.5rem;
 }
 
 .sidebar .form-control:focus,
 .sidebar .form-select:focus {
-  box-shadow: 0 0 0 4px rgba(255, 199, 234, 0.25) !important;
-  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 4px rgba(255, 199, 234, 0.25);
+  border-color: var(--ring);
 }
 
 .sidebar .form-control::placeholder {
@@ -219,19 +231,19 @@ a:hover {
 }
 
 .btn-reset {
-  background: var(--surface) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: var(--muted) !important;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--muted);
   padding: 0.6rem;
   width: 100%;
-  border-radius: 14px !important;
+  border-radius: 14px;
   transition: all 0.2s ease;
 }
 
 .btn-reset:hover {
-  background: var(--card) !important;
-  color: var(--text) !important;
-  border-color: var(--primary) !important;
+  background: var(--card);
+  color: var(--text);
+  border-color: var(--primary);
   transform: translateY(-1px);
 }
 
@@ -441,7 +453,6 @@ a:hover {
   text-decoration: underline;
 }
 
-
 /* ================= User Stats Section ================= */
 #user-stats {
   margin-top: 2rem;
@@ -492,4 +503,233 @@ a:hover {
   font-size: 0.85rem;
   color: var(--muted);
   letter-spacing: 0.5px;
+}
+
+/* ================= Modal (matches sidebar) ================= */
+#add-game-modal .modal-dialog {
+  max-width: 480px;
+  margin: auto;
+}
+
+#add-game-modal .modal-content {
+  background: var(--bg-2);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+#add-game-modal .modal-header {
+  border-bottom: 2px solid rgba(255, 255, 255);
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+#add-game-modal .modal-body {
+  padding: 1.5rem;
+}
+
+#add-game-modal .form-control,
+#add-game-modal .form-select {
+  background: var(--bg-2);
+  border: 1px solid rgba(255, 255, 255);
+  color: var(--text);
+  border-radius: 14px;
+  margin-bottom: 0.75rem;
+}
+
+#add-game-modal .form-control:focus,
+#add-game-modal .form-select:focus {
+  box-shadow: 0 0 0 4px rgba(255, 199, 234);
+  border-color: var(--ring);
+}
+
+#add-game-modal .btn-success {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border: none;
+  color: #1b0b18;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+#add-game-modal .btn-secondary {
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255);
+}
+
+/* ================= Autocomplete Dropdown ================= */
+#game-suggestions {
+  background: var(--bg-2);
+  border: 1px solid rgba(255, 255, 255);
+  border-radius: 14px;
+  margin-top: 6px;
+  box-shadow: var(--shadow);
+  color: var(--text);
+  overflow: hidden;
+}
+
+#game-suggestions li {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+#game-suggestions li:hover,
+#game-suggestions li:focus {
+  background: rgba(255, 255, 255);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+#game-suggestions li:last-child {
+  border-bottom: none;
+}
+
+#game-suggestions strong {
+  color: var(--secondary);
+}
+
+/* Reviews Section */
+.review-card {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.review-game-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.review-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.review-rating-badge {
+  text-align: center;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.review-rating-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.review-rating-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.review-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 1rem 0;
+  position: relative;
+}
+
+.review-text.collapsed {
+  max-height: 4.8em; /* 3 lines at 1.6 line-height */
+  overflow: hidden;
+}
+
+.review-text.collapsed::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.4em;
+  background: linear-gradient(to bottom, transparent, var(--card));
+  pointer-events: none;
+}
+
+.show-more-btn {
+  background: none;
+  border: none;
+  color: var(--secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0.75rem;
+  transition: color 0.2s ease;
+  display: none; /* Hidden by default, JS will show if needed */
+}
+
+.show-more-btn:hover {
+  color: var(--primary);
+}
+
+.review-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btn-review-action {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface);
+  color: var(--secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.btn-review-action:hover {
+  background: var(--secondary);
+  color: var(--bg);
+  border-color: var(--secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(138, 168, 255, 0.35);
+}
+
+.btn-review-delete {
+  color: var(--primary);
+}
+
+.btn-review-delete:hover {
+  background: var(--primary);
+  color: var(--bg);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(255, 114, 182, 0.35);
 }

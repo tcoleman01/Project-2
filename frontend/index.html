@@ -163,13 +163,44 @@
         </div>
 
         <div class="col-lg-9">
-          <h2 class="mb-5">The Goods</h2>
+          <h2 class="section-header mb-5">The Goods</h2>
           <span>
             <button class="btn btn-primary mb-4" id="add-game-btn">Add New Game</button>
           </span>
-          <!-- Example game card -->
           <div class="game-grid" id="game-section">
             <!-- Game cards will be dynamically inserted here -->
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-9">
+          <h2 class="section-header mb-5">The Reviews</h2>
+          <span>
+            <button class="btn btn-primary mb-4" id="add-review-btn">Add New Review</button>
+          </span>
+          <div class="reviews-div" id="reviews-section">
+            <p>No reviews yet. Add your first one!</p>
+            <div class="review-card">
+              <div class="review-header">
+                <div>
+                  <h5 class="review-game-title">Game Title</h5>
+                  <div class="review-meta">Reviewed by User123 on 2023-03-15</div>
+                </div>
+                <div class="review-rating-badge">
+                  <div class="review-rating-value">4.5/5</div>
+                  <div class="review-rating-label">Rating</div>
+                </div>
+              </div>
+              <p class="review-text collapsed">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque voluptatem id suscipit perspiciatis iure maiores nesciunt dolorum dolor, facere perferendis modi architecto ex quasi itaque libero ut, consequuntur molestiae? Harum?
+              </p>
+              <button class="show-more-btn" onclick="toggleReview('review-1', this)">Show More</button>
+              <div class="review-actions">
+                <button class="btn-review-action">Edit</button>
+                <button class="btn-review-action btn-review-delete">Delete</button>
+              </div>
+              </div>
+              </div>
           </div>
         </div>
       </div>
@@ -274,12 +305,14 @@
                   value="0"
                 />
               </div>
-            </form>
+            
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-success" id="submit-add-game">Submit</button>
           </div>
+          </div>
+          </form>
         </div>
       </div>
     </div>
