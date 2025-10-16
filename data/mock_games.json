@@ -7,7 +7,6 @@
     "price": 59.99,
     "genre": "Action RPG",
     "status": "Released",
-    "hours": 120,
     "coverUrl": "https://example.com/eldenring.jpg",
     "description": "An expansive open-world action RPG from FromSoftware."
   },
@@ -19,7 +18,6 @@
     "price": 14.99,
     "genre": "Simulation",
     "status": "Released",
-    "hours": 90,
     "coverUrl": "https://example.com/stardewvalley.jpg",
     "description": "A peaceful farming and life simulator set in a cozy countryside town."
   },
@@ -31,7 +29,6 @@
     "price": 49.99,
     "genre": "Action Adventure",
     "status": "Released",
-    "hours": 60,
     "coverUrl": "https://example.com/cyberpunk2077.jpg",
     "description": "An open-world futuristic RPG set in the neon city of Night City."
   },
@@ -43,7 +40,6 @@
     "price": 14.99,
     "genre": "Metroidvania",
     "status": "Released",
-    "hours": 50,
     "coverUrl": "https://example.com/hollowknight.jpg",
     "description": "A challenging 2D action platformer set in a vast, decaying insect world."
   },
@@ -55,7 +51,6 @@
     "price": 39.99,
     "genre": "RPG",
     "status": "Released",
-    "hours": 100,
     "coverUrl": "https://example.com/witcher3.jpg",
     "description": "An epic fantasy RPG following Geralt of Rivia on a monster-hunting adventure."
   }
