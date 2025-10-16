@@ -9,7 +9,8 @@ const showMsg = (t) => {
 
 const getUsers = () => JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
 const saveUsers = (arr) => localStorage.setItem(USERS_KEY, JSON.stringify(arr));
-const setSession = (user) => localStorage.setItem(SESSION_KEY, JSON.stringify({ email: user.email }));
+const setSession = (user) =>
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ email: user.email }));
 export const getSession = () => JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
 
 // Signup logic

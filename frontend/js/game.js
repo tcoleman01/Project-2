@@ -20,8 +20,7 @@ async function loadGames() {
     const game = games.find((g) => g.slug === slug);
 
     if (!game) {
-      document.querySelector("main").innerHTML =
-        "<p class='container py-4'>Game not found.</p>";
+      document.querySelector("main").innerHTML = "<p class='container py-4'>Game not found.</p>";
       return;
     }
 

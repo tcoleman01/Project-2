@@ -30,9 +30,7 @@ app.get("/", (_req, res) => {
 });
 
 // Explicit HTML routes
-app.get("/index.html", (_req, res) =>
-  res.sendFile(path.join(__dirname, "frontend", "index.html"))
-);
+app.get("/index.html", (_req, res) => res.sendFile(path.join(__dirname, "frontend", "index.html")));
 app.get("/user-profile.html", (_req, res) =>
   res.sendFile(path.join(__dirname, "frontend", "user-profile.html"))
 );
@@ -42,9 +40,7 @@ app.get("/signup.html", (_req, res) =>
 app.get("/account.html", (_req, res) =>
   res.sendFile(path.join(__dirname, "frontend", "account.html"))
 );
-app.get("/game.html", (_req, res) =>
-  res.sendFile(path.join(__dirname, "frontend", "game.html"))
-);
+app.get("/game.html", (_req, res) => res.sendFile(path.join(__dirname, "frontend", "game.html")));
 
 // API routes
 app.use("/api/", gamesRouter);

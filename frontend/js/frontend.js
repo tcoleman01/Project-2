@@ -11,7 +11,11 @@ function Library() {
   let gamesIndex = new Map();
 
   const getOid = (x) => (x && typeof x === "object" && x.$oid ? x.$oid : x);
-  const loadMock = (p) => fetch(p, { cache: "no-store" }).then(r => { if(!r.ok) throw new Error(p); return r.json(); });
+  const loadMock = (p) =>
+    fetch(p, { cache: "no-store" }).then((r) => {
+      if (!r.ok) throw new Error(p);
+      return r.json();
+    });
 
   // ===== Render Stats =====
   me.renderStats = (stats = {}) => {
@@ -37,7 +41,9 @@ function Library() {
     });
 
     list.innerHTML = filtered.length
-      ? filtered.map(g => `
+      ? filtered
+          .map(
+            (g) => `
           <div class="col-12 col-md-6 col-lg-4">
             <div class="card p-3">
               <h5>${g.title || "Untitled Game"}</h5>
@@ -53,7 +59,9 @@ function Library() {
               </div>
             </div>
           </div>
-        `).join("")
+        `
+          )
+          .join("")
       : `<p class="text-secondary">No games found.</p>`;
   };
 
@@ -63,10 +71,14 @@ function Library() {
       const res = await fetch(`/api/userGames?userId=${encodeURIComponent(userIdHeader)}`);
       if (!res.ok) throw res;
       const { items } = await res.json();
-      userGamesCache = items.map(x => ({
-        _id: x._id, title: x.title || x.gameTitle || "(Unknown title)",
-        platform: x.platform || "", genre: x.genre || "",
-        status: x.status || "Backlog", hoursPlayed: x.hoursPlayed || 0, price: x.price || 0
+      userGamesCache = items.map((x) => ({
+        _id: x._id,
+        title: x.title || x.gameTitle || "(Unknown title)",
+        platform: x.platform || "",
+        genre: x.genre || "",
+        status: x.status || "Backlog",
+        hoursPlayed: x.hoursPlayed || 0,
+        price: x.price || 0,
       }));
       me.renderGames();
     } catch {
@@ -74,14 +86,15 @@ function Library() {
         loadMock("/data/mock_games.json"),
         loadMock("/data/mock_user_games.json"),
       ]);
-      gamesIndex = new Map(games.map(g => [getOid(g._id), g]));
+      gamesIndex = new Map(games.map((g) => [getOid(g._id), g]));
       const sess = getSession();
       const sessId = sess?.userId || sess?.email;
-      const effectiveUserId = typeof sessId === "string" && !sessId?.includes("@") ? sessId : MOCK_USER_ID;
+      const effectiveUserId =
+        typeof sessId === "string" && !sessId?.includes("@") ? sessId : MOCK_USER_ID;
 
       userGamesCache = userGames
-        .filter(ug => getOid(ug.userId) === effectiveUserId)
-        .map(ug => {
+        .filter((ug) => getOid(ug.userId) === effectiveUserId)
+        .map((ug) => {
           const game = gamesIndex.get(getOid(ug.gameId)) || {};
           return {
             _id: getOid(ug._id),
@@ -90,7 +103,7 @@ function Library() {
             genre: game.genre || "",
             status: ug.status || "Backlog",
             hoursPlayed: ug.hoursPlayed || 0,
-            price: game.price || 0
+            price: game.price || 0,
           };
         });
       me.renderGames();
@@ -110,7 +123,7 @@ function Library() {
         (a, g) => ({
           totalGames: a.totalGames + 1,
           totalHours: a.totalHours + (Number(g.hoursPlayed) || 0),
-          totalSpend: a.totalSpend + (Number(g.price) || 0)
+          totalSpend: a.totalSpend + (Number(g.price) || 0),
         }),
         { totalGames: 0, totalHours: 0, totalSpend: 0 }
       );
@@ -127,12 +140,13 @@ function Library() {
       const data = Object.fromEntries(new FormData(form));
       try {
         const res = await fetch("/api/userGames", {
-          method: "POST", headers,
+          method: "POST",
+          headers,
           body: JSON.stringify({
             gameId: data.gameId,
             status: data.status || "Backlog",
             price: data.price || 0,
-            hoursPlayed: data.hoursPlayed || 0
+            hoursPlayed: data.hoursPlayed || 0,
           }),
         });
         if (!res.ok) throw res;
@@ -149,7 +163,9 @@ function Library() {
   me.updateGame = async (id, patch) => {
     try {
       const res = await fetch(`/api/userGames/${id}`, {
-        method: "PUT", headers, body: JSON.stringify(patch)
+        method: "PUT",
+        headers,
+        body: JSON.stringify(patch),
       });
       if (!res.ok) throw res;
       await me.refreshGames();
