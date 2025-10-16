@@ -4,11 +4,11 @@ import MyDB from "../db/MyMongoDB.js";
 const router = express.Router();
 
 // GET a users dashboard stats
-router.get("/userGames/stats", async (req, res) => {
+router.get("/userGames/stats/:userId", async (req, res) => {
   console.log("GET user game stats");
 
   try {
-    const { userId } = req.query;
+    const { userId } = req.params;
     if (!userId) return res.status(400).json({ error: "userId is required" });
 
     const stats = await MyDB.getUserGameStats(userId);
@@ -36,20 +36,18 @@ router.get("/userGames", async (req, res) => {
 });
 
 // POST to add an entry in the userGames collection for a specific user
-router.post("/userGames", async (req, res) => {
+router.post("/userGames/userId/:userId", async (req, res) => {
   console.log("Received POST request for api/userGames:", req.body);
 
   try {
-    const { userId, gameId, status, price, hoursPlayed } = req.body;
+    const { userId, gameId, status, moneySpent, hoursPlayed } = req.body;
     if (!userId || !gameId)
       return res.status(400).json({ error: "userId and gameId are required" });
 
-    // Validate and sanitize inputs
-    const validStatuses = ["Playing", "Completed", "Backlog", "Wishlist"];
-    const goodStatus = validStatuses.includes(status) ? status : "Backlog";
     const goodHours =
       isFinite(Number(hoursPlayed)) && Number(hoursPlayed) >= 0 ? Number(hoursPlayed) : 0;
-    const goodPrice = isFinite(Number(price)) && Number(price) >= 0 ? Number(price) : 0;
+    const goodMoney =
+      isFinite(Number(moneySpent)) && Number(moneySpent) >= 0 ? Number(moneySpent) : 0;
 
     // Check if the game exists
     const game = await MyDB.getGameByIdOrSlug(gameId);
@@ -58,8 +56,8 @@ router.post("/userGames", async (req, res) => {
     const newUserGame = await MyDB.addUserGame({
       userId,
       gameId,
-      status: goodStatus,
-      price: goodPrice,
+      status,
+      moneySpent: goodMoney,
       hoursPlayed: goodHours,
     });
     res.status(201).json({ ok: true, newUserGame });
@@ -80,7 +78,7 @@ router.patch("/userGames/:id", async (req, res) => {
     const { id } = req.params;
     if (!id) return res.status(400).json({ error: "Valid userGame ID is required" });
 
-    const { status, hoursPlayed, price } = req.body;
+    const { status, hoursPlayed, moneySpent } = req.body;
     const updates = {};
 
     // Validate and sanitize our inputs
@@ -97,8 +95,8 @@ router.patch("/userGames/:id", async (req, res) => {
         return res.status(400).json({ error: "hoursPlayed must be a non-negative number" });
       updates.hoursPlayed = hoursPlayed;
     }
-    if (price !== undefined) {
-      const p = Number(price);
+    if (moneySpent !== undefined) {
+      const p = Number(moneySpent);
       if (isNaN(p) || p < 0)
         return res.status(400).json({ error: "price must be a non-negative number" });
       updates.price = p;
