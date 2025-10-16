@@ -19,6 +19,7 @@ function MyMongoDB({
     return { client, games, reviews, userGames };
   };
 
+  // =============== Master games collection CRUD ===============
   me.getAllGames = async ({ query = {}, pageSize = 20, page = 0 } = {}) => {
     const { client, games } = connect();
 
@@ -86,7 +87,7 @@ function MyMongoDB({
     }
   };
 
-  // === reviews collection CRUD ===
+  // =============== Reviews collection CRUD ===============
   me.getReviews = async ({ gameId, userId, pageSize = 20, page = 0 } = {}) => {
     const { client, reviews } = connect();
 
@@ -158,6 +159,7 @@ function MyMongoDB({
     }
   };
 
+  // Helper to convert various id formats to ObjectId
   const toObjectId = (id) => {
     if (!id) return null;
     try {
@@ -168,13 +170,14 @@ function MyMongoDB({
         return new ObjectId(id.$oid);
       throw new Error(`Invalid ObjectId format: ${JSON.stringify(id)}`);
     } catch (err) {
-      console.error("❌ toObjectId failed:", id, err);
+      console.error("toObjectId failed:", id, err);
       throw err;
     }
   };
 
-  // === userGames collection CRUD ===
-  me.addUserGame = async ({ userId, gameId, status, hoursPlayed, price }) => {
+  // ============== User games collection CRUD ===============
+  // Add a game to a user's list/profile
+  me.addUserGame = async ({ userId, gameId, status, hoursPlayed, moneySpent }) => {
     const { client, userGames } = connect();
 
     try {
@@ -188,8 +191,8 @@ function MyMongoDB({
         userId: parsedUserId,
         gameId: parsedGameId,
         status,
-        price,
         hoursPlayed,
+        moneySpent,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -335,7 +338,12 @@ function MyMongoDB({
         { $unwind: "$gameDetails" },
 
         // Add price field so we can sum up total amount spent
-        { $addFields: { price: { $ifNull: ["$gameDetails.price", 0] } } },
+        {
+          $addFields: {
+            price: { $ifNull: ["$price", 0] },
+            hoursPlayed: { $ifNull: ["$hoursPlayed", 0] },
+          },
+        },
 
         {
           $group: {
@@ -346,7 +354,7 @@ function MyMongoDB({
             totalWishlist: { $sum: { $cond: [{ $eq: ["$status", "Wishlist"] }, 1, 0] } },
             totalPlaying: { $sum: { $cond: [{ $eq: ["$status", "Playing"] }, 1, 0] } },
             totalHours: { $sum: "$hoursPlayed" },
-            totalSpent: { $sum: "$price" },
+            totalSpent: { $sum: "$moneySpent" },
           },
         },
         {
