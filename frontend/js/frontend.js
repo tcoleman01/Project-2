@@ -1,318 +1,210 @@
-console.log("This is the frontend JavaScript file.");
+// frontend/js/frontend.js
+import { getUserIdHeader, getSession } from "./auth-local.js";
 
-function Games() {
+function Library() {
   const me = {};
-  const userId = "200000000000000000000001"; // Example userId for testing
+  const userIdHeader = getUserIdHeader();
+  const headers = { "Content-Type": "application/json", "x-user-id": userIdHeader };
+  const MOCK_USER_ID = "200000000000000000000001";
 
-  me.showError = ({ msg, res, type = "danger" }) => {
-    // Show an error message to the user using bootstrap
-    const main = document.querySelector("main");
-    const alert = document.createElement("div");
-    alert.className = `alert alert-${type}`;
-    alert.role = "alert";
-    alert.innerText = `${msg}: ${res.status} ${res.statusText}`;
-    main.prepend(alert);
+  let userGamesCache = [];
+  let gamesIndex = new Map();
+
+  const getOid = (x) => (x && typeof x === "object" && x.$oid ? x.$oid : x);
+  const loadMock = (p) => fetch(p, { cache: "no-store" }).then(r => { if(!r.ok) throw new Error(p); return r.json(); });
+
+  // ===== Render Stats =====
+  me.renderStats = (stats = {}) => {
+    const g = (id) => document.getElementById(id);
+    if (g("statTotalGames")) g("statTotalGames").textContent = stats.totalGames ?? 0;
+    if (g("statTotalHours")) g("statTotalHours").textContent = stats.totalHours ?? 0;
+    if (g("statTotalSpent")) g("statTotalSpent").textContent = (stats.totalSpend ?? 0).toFixed(2);
   };
 
-  const renderGames = (games) => {
-    const gamesDiv = document.getElementById("game-section");
-    gamesDiv.innerHTML = ""; // Clear existing content
-    for (const g of games) {
-      const game = g.gameDetails || {};
-      const { title, platform, genre, price, year } = game;
-      const status = g.status;
-      const hoursPlayed = g.hoursPlayed || 0;
-      const userRating = g.userReview?.rating || "-";
-      const card = document.createElement("div");
-      card.className = "game-card";
-      card.innerHTML = `
-                <div class="game-card-image">
-                                <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600&h=400&fit=crop" alt="Baldur's Gate 3">
-                                <span class="status-badge badge-playing">${status}</span>
-                            </div>
-                            <div class="game-card-body">
-                                <h5 class="game-title">${title}</h5>
-                                <div class="genre-tags">
-                                    <span class="genre-tag">${genre}</span>
-                                </div>
-                                <div class="game-meta">
-                                    <span class="game-meta-tag">${year || "-"}</span>
-                                    <span class="game-meta-tag">${platform}</span>
-                                    <span class="game-meta-tag">$${price?.toFixed ? price.toFixed(2) : "0.00"}</span>
-                                </div>    
-                                <div class="game-stats">
-                                    <div class="stat-item">
-                                        <div class="stat-value">${hoursPlayed || 0}</div>
-                                        <div class="stat-label">Hours</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-value">${userRating}</div>
-                                    <div class="stat-label">Rating</div>
-                                </div>
-                                </div>
-                                <div class="card-actions">
-                                    <button class="btn-card-action edit-game-btn" data-id="${g._id}">Edit</button>
-                                    <button class="btn-card-action btn-delete delete-game-btn" data-id="${g._id}">Delete</button>
-                                </div>
-                            </div>
-                `;
-      gamesDiv.appendChild(card);
-    }
+  // ===== Render Games =====
+  me.renderGames = () => {
+    const list = document.getElementById("gamesList") || document.getElementById("game-section");
+    if (!list) return;
+
+    const status = document.getElementById("filterStatus")?.value || "";
+    const q = (document.getElementById("filterSearch")?.value || "").toLowerCase();
+
+    const filtered = userGamesCache.filter((g) => {
+      const statusOk = !status || g.status === status;
+      const hay = `${g.title || ""} ${g.platform || ""} ${g.genre || ""}`.toLowerCase();
+      const searchOk = !q || hay.includes(q);
+      return statusOk && searchOk;
+    });
+
+    list.innerHTML = filtered.length
+      ? filtered.map(g => `
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card p-3">
+              <h5>${g.title || "Untitled Game"}</h5>
+              <p class="mb-1"><strong>Status:</strong> ${g.status || "Backlog"}</p>
+              <p class="mb-1"><strong>Hours:</strong> ${g.hoursPlayed || 0}</p>
+              <p class="mb-1"><strong>Price:</strong> $${Number(g.price || 0).toFixed(2)}</p>
+              <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-sm btn-outline-primary edit-btn"
+                  data-id="${g._id}" data-status="${g.status}" data-hours="${g.hoursPlayed}" data-price="${g.price}">
+                  Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${g._id}">Delete</button>
+              </div>
+            </div>
+          </div>
+        `).join("")
+      : `<p class="text-secondary">No games found.</p>`;
   };
 
+  // ===== Load User Games =====
   me.refreshGames = async () => {
     try {
-      const res = await fetch(`/api/userGames?userId=${userId}`);
-      if (!res.ok) {
-        console.error("Failed to fetch games", res.status, res.statusText);
-        me.showError({ msg: "Failed to fetch games", res });
-        return;
-      }
+      const res = await fetch(`/api/userGames?userId=${encodeURIComponent(userIdHeader)}`);
+      if (!res.ok) throw res;
+      const { items } = await res.json();
+      userGamesCache = items.map(x => ({
+        _id: x._id, title: x.title || x.gameTitle || "(Unknown title)",
+        platform: x.platform || "", genre: x.genre || "",
+        status: x.status || "Backlog", hoursPlayed: x.hoursPlayed || 0, price: x.price || 0
+      }));
+      me.renderGames();
+    } catch {
+      const [games, userGames] = await Promise.all([
+        loadMock("/data/mock_games.json"),
+        loadMock("/data/mock_user_games.json"),
+      ]);
+      gamesIndex = new Map(games.map(g => [getOid(g._id), g]));
+      const sess = getSession();
+      const sessId = sess?.userId || sess?.email;
+      const effectiveUserId = typeof sessId === "string" && !sessId?.includes("@") ? sessId : MOCK_USER_ID;
 
-      const data = await res.json();
-      console.log("Fetched games:", data);
-
-      me.currentGames = data.games || [];
-
-      renderGames(me.currentGames);
-    } catch (e) {
-      console.error("Error fetching user games", e);
-      const gamesDiv = document.getElementById("game-section");
-      gamesDiv.innerHTML = `<div class="alert alert-danger">Failed to load your games. Bummer.</div>`;
+      userGamesCache = userGames
+        .filter(ug => getOid(ug.userId) === effectiveUserId)
+        .map(ug => {
+          const game = gamesIndex.get(getOid(ug.gameId)) || {};
+          return {
+            _id: getOid(ug._id),
+            title: game.title || "(Unknown title)",
+            platform: game.platform || "",
+            genre: game.genre || "",
+            status: ug.status || "Backlog",
+            hoursPlayed: ug.hoursPlayed || 0,
+            price: game.price || 0
+          };
+        });
+      me.renderGames();
     }
   };
 
+  // ===== Load Stats =====
   me.refreshStats = async () => {
     try {
-      const res = await fetch(`/api/userGames/stats/${userId}`);
-      if (!res.ok) {
-        console.error("Failed to fetch stats", res.status, res.statusText);
-        me.showError({ msg: "Failed to fetch stats", res });
-        return;
-      }
-      const data = await res.json();
-      console.log("Fetched stats:", data);
-
-      const stats = data.stats;
-      console.log("Stats:", stats);
-      document.getElementById("total-games").innerText = stats.totalGames || 0;
-      document.getElementById("completed-games").innerText = stats.totalCompleted || 0;
-      document.getElementById("hours-logged").innerText = stats.totalHours || 0;
-      document.getElementById("total-spent").innerText =
-        `$${stats.totalSpent?.toFixed(2) || "0.00"}`;
-    } catch (e) {
-      console.error("Error fetching stats", e);
-      document.getElementById("total-games").innerText = "0";
-      document.getElementById("completed-games").innerText = "0";
-      document.getElementById("hours-logged").innerText = "0";
-      document.getElementById("total-spent").innerText = "$0.00";
+      const res = await fetch(`/api/userGames/stats?userId=${encodeURIComponent(userIdHeader)}`);
+      if (!res.ok) throw res;
+      const { stats } = await res.json();
+      me.renderStats(stats);
+    } catch {
+      if (!userGamesCache.length) await me.refreshGames();
+      const totals = userGamesCache.reduce(
+        (a, g) => ({
+          totalGames: a.totalGames + 1,
+          totalHours: a.totalHours + (Number(g.hoursPlayed) || 0),
+          totalSpend: a.totalSpend + (Number(g.price) || 0)
+        }),
+        { totalGames: 0, totalHours: 0, totalSpend: 0 }
+      );
+      me.renderStats(totals);
     }
   };
 
+  // ===== Add Game Form =====
   me.addGameFormModal = () => {
-    const modalEl = document.getElementById("add-game-modal");
-    if (!modalEl || !window.bootstrap?.Modal)
-      return console.error("Modal missing or Bootstrap not loaded");
-
-    const modal = new bootstrap.Modal(modalEl);
-    const form = document.getElementById("new-game-form");
-
-    const titleInput = form.querySelector("#game-title");
-    const genreInput = form.querySelector("#game-genre");
-    const platformInput = form.querySelector("#game-platform");
-    const hoursInput = form.querySelector("#game-hours");
-    const priceInput = form.querySelector("#game-price");
-    const statusInput = form.querySelector("#game-status");
-
-    let selectedGame = null;
-    const suggestionsEl = document.createElement("ul");
-    suggestionsEl.className = "list-group position-absolute w-100";
-    suggestionsEl.style.zIndex = "1055";
-    titleInput.parentElement.style.position = "relative";
-    titleInput.parentElement.appendChild(suggestionsEl);
-
-    // Debounced game search
-    const debounce = (fn, ms = 250) => {
-      let timer;
-      return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), ms);
-      };
-    };
-
-    const renderSuggestions = (games = []) => {
-      suggestionsEl.innerHTML = "";
-      if (!games.length) return (suggestionsEl.style.display = "none");
-      games.forEach((g) => {
-        const li = document.createElement("li");
-        li.className = "list-group-item list-group-item-action";
-        li.textContent = `${g.title} — ${g.platform || ""} (${g.year || "N/A"})`;
-        li.onclick = () => selectGame(g);
-        suggestionsEl.appendChild(li);
-      });
-      suggestionsEl.style.display = "block";
-    };
-
-    const searchGames = debounce(async (q) => {
-      const term = q.trim();
-      if (!term) return renderSuggestions([]);
+    const form = document.getElementById("addGameForm");
+    if (!form) return;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
       try {
-        const res = await fetch(`/api/games?q=${encodeURIComponent(term)}`);
-        const data = await res.json();
-        renderSuggestions(data.games?.slice(0, 20));
-      } catch {
-        renderSuggestions([]);
-      }
-    });
-
-    const selectGame = (g) => {
-      selectedGame = g;
-      titleInput.value = g.title;
-      genreInput.value = g.genre || "";
-      platformInput.value = g.platform || "";
-      priceInput.value = g.price?.toFixed(2) || 0;
-      genreInput.readOnly = platformInput.readOnly = true;
-      suggestionsEl.style.display = "none";
-    };
-
-    titleInput.addEventListener("input", (e) => {
-      selectedGame = null;
-      genreInput.readOnly = platformInput.readOnly = false;
-      searchGames(e.target.value);
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!suggestionsEl.contains(e.target) && e.target !== titleInput)
-        suggestionsEl.style.display = "none";
-    });
-
-    form.addEventListener("submit", async (ev) => {
-      ev.preventDefault();
-      if (!selectedGame) return alert("Please select a game.");
-
-      const payload = {
-        userId: "200000000000000000000001", // Example userId for testing
-        gameId: selectedGame._id?.$oid || selectedGame._id,
-        status: statusInput.value,
-        hoursPlayed: Number(hoursInput.value) || 0,
-        moneySpent: Number(priceInput.value) || 0,
-      };
-
-      try {
-        const res = await fetch(`/api/userGames/userId/${payload.userId}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+        const res = await fetch("/api/userGames", {
+          method: "POST", headers,
+          body: JSON.stringify({
+            gameId: data.gameId,
+            status: data.status || "Backlog",
+            price: data.price || 0,
+            hoursPlayed: data.hoursPlayed || 0
+          }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || res.statusText);
-        modal.hide();
+        if (!res.ok) throw res;
         form.reset();
-        selectedGame = null;
         await me.refreshGames();
         await me.refreshStats();
-      } catch (err) {
-        console.error("Error adding game:", err);
-        alert("Failed to add game.");
+      } catch {
+        alert("Demo mode: cannot persist to mock files.");
       }
     });
-
-    document.getElementById("add-game-btn")?.addEventListener("click", () => modal.show());
   };
 
-  document.addEventListener("click", (e) => {
-    const editBtn = e.target.closest(".edit-game-btn");
-    if (editBtn) {
-      const userGameId = editBtn.dataset.id;
-      me.openEditModal(userGameId);
-    }
-  });
-
-  me.openEditModal = (userGameId) => {
-    const modalEl = document.getElementById("edit-game-modal");
-    const statusEl = document.getElementById("edit-status");
-    const hoursEl = document.getElementById("edit-hours");
-    const priceEl = document.getElementById("edit-price");
-    const form = document.getElementById("edit-game-form");
-    const modal = new bootstrap.Modal(modalEl);
-
-    // Prefill fields from your current games cache if available
-    const g = me.currentGames.find((x) => x._id === userGameId);
-    if (g) {
-      statusEl.value = g.status;
-      hoursEl.value = g.hoursPlayed ?? 0;
-      priceEl.value = g.price ?? 0;
-    }
-
-    const onSave = async (ev) => {
-      ev.preventDefault();
-      const payload = {
-        status: statusEl.value,
-        hoursPlayed: Number(hoursEl.value),
-        price: Number(priceEl.value),
-      };
-      console.log("Editing userGameId:", userGameId);
-      try {
-        const res = await fetch(`/api/userGames/${userGameId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Update failed");
-
-        modal.hide();
-        await me.refreshGames();
-        await me.refreshStats();
-      } catch (err) {
-        console.error("Error updating game:", err);
-        alert("Failed to update game: " + err.message);
-      }
-    };
-
-    form.addEventListener("submit", onSave, { once: true });
-    modal.show();
-  };
-
-  document.addEventListener("click", async (e) => {
-    const delBtn = e.target.closest(".delete-game-btn");
-    if (delBtn) {
-      const userGameId = delBtn.dataset.id;
-      if (confirm("Are you sure you want to remove this game from your profile?")) {
-        try {
-          await me.deleteUserGame(userGameId);
-        } catch (err) {
-          console.error("Error deleting game:", err);
-          alert("Failed to delete game: " + err.message);
-        }
-      }
-    }
-  });
-
-  me.deleteUserGame = async (userGameId) => {
+  // ===== Update & Delete =====
+  me.updateGame = async (id, patch) => {
     try {
-      console.log("🗑️ Deleting userGame:", userGameId);
-      const res = await fetch(`/api/userGames/${userGameId}`, {
-        method: "DELETE",
+      const res = await fetch(`/api/userGames/${id}`, {
+        method: "PUT", headers, body: JSON.stringify(patch)
       });
-
-      if (!res.ok) throw new Error("Failed to delete game");
-
-      const data = await res.json();
-      console.log("✅ Delete success:", data);
-
-      // Refresh lists + stats
+      if (!res.ok) throw res;
       await me.refreshGames();
       await me.refreshStats();
-    } catch (err) {
-      console.error("Error deleting game:", err);
+    } catch {
+      alert("Demo mode: cannot persist to mock files.");
+    }
+  };
+
+  me.deleteGame = async (id) => {
+    try {
+      const res = await fetch(`/api/userGames/${id}`, { method: "DELETE", headers });
+      if (!res.ok) throw res;
+      await me.refreshGames();
+      await me.refreshStats();
+    } catch {
+      alert("Demo mode: cannot persist to mock files.");
     }
   };
 
   return me;
 }
 
-const myGames = Games();
-myGames.refreshGames();
-myGames.refreshStats();
-myGames.addGameFormModal();
+// ===== Initialize =====
+const myLib = Library();
+document.getElementById("filterStatus")?.addEventListener("change", () => myLib.renderGames());
+document.getElementById("filterSearch")?.addEventListener("input", () => myLib.renderGames());
+document.addEventListener("click", (e) => {
+  const del = e.target.closest(".delete-btn");
+  if (del) myLib.deleteGame(del.dataset.id);
+});
+
+const editForm = document.getElementById("editGameForm");
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".edit-btn");
+  if (!btn || !editForm) return;
+  editForm.id.value = btn.dataset.id;
+  editForm.status.value = btn.dataset.status || "Backlog";
+  editForm.hoursPlayed.value = btn.dataset.hours || 0;
+  editForm.price.value = btn.dataset.price || 0;
+  document.getElementById("editGameModal").style.display = "block";
+});
+
+editForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  await myLib.updateGame(editForm.id.value, {
+    status: editForm.status.value,
+    hoursPlayed: editForm.hoursPlayed.value,
+    price: editForm.price.value,
+  });
+  document.getElementById("editGameModal").style.display = "none";
+});
+
+window.addEventListener("DOMContentLoaded", async () => {
+  await myLib.refreshGames();
+  await myLib.refreshStats();
+  myLib.addGameFormModal();
+});
