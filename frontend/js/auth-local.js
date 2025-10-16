@@ -1,63 +1,71 @@
-// Simple localStorage auth for demo only (no real passwords).
+// Simple localStorage-based authentication (frontend only, no backend session)
 const USERS_KEY = "vg_users";
 const SESSION_KEY = "vg_session";
 
+const msgEl = document.getElementById("msg");
+const showMsg = (t) => {
+  if (msgEl) msgEl.textContent = t || "";
+};
+
 const getUsers = () => JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
 const saveUsers = (arr) => localStorage.setItem(USERS_KEY, JSON.stringify(arr));
-const setSession = (user) => localStorage.setItem(SESSION_KEY, JSON.stringify({ email: user.email, userId: user.userId || null }));
+const setSession = (user) => localStorage.setItem(SESSION_KEY, JSON.stringify({ email: user.email }));
 export const getSession = () => JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
 
-const msgEl = document.getElementById("msg");
-const showMsg = (t) => { if (msgEl) msgEl.textContent = t || ""; };
-
-const REDIRECT_AFTER_AUTH = "/index.html";
-
-export function getUserIdHeader() {
-  const s = getSession();
-  return s && (s.userId || s.email) ? (s.userId || s.email.toLowerCase()) : "demo";
-}
-
-function bindSignup(form) {
+// Signup logic
+function onSignup(form) {
   form.addEventListener("submit", (e) => {
-    e.preventDefault(); showMsg("");
+    e.preventDefault();
+    showMsg("");
     const data = Object.fromEntries(new FormData(form));
-    const email = String(data.email || "").trim().toLowerCase();
-    const username = String(data.username || "").trim();
-    const password = String(data.password || "");
+    const email = String(data.email).trim().toLowerCase();
+    const username = String(data.username).trim();
+    const password = String(data.password);
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMsg("Enter a valid email.");
-    if (username.length < 3) return showMsg("Username must be at least 3 chars.");
-    if (password.length < 8) return showMsg("Password must be at least 8 chars.");
+    if (username.length < 3) return showMsg("Username must be at least 3 characters.");
+    if (password.length < 8) return showMsg("Password must be at least 8 characters.");
 
     const users = getUsers();
-    if (users.some(u => u.email === email)) return showMsg("Email already in use.");
-    if (users.some(u => u.username === username)) return showMsg("Username already in use.");
+    if (users.some((u) => u.email === email)) return showMsg("Email already in use.");
+    if (users.some((u) => u.username === username)) return showMsg("Username already in use.");
 
     users.push({ email, username, password, createdAt: Date.now(), updatedAt: Date.now() });
     saveUsers(users);
     setSession({ email });
-    location.href = REDIRECT_AFTER_AUTH;
+
+    // Redirect to user profile after signup
+    location.href = "user-profile.html";
   });
 }
 
-function bindLogin(form) {
+// Login logic
+function onLogin(form) {
   form.addEventListener("submit", (e) => {
-    e.preventDefault(); showMsg("");
+    e.preventDefault();
+    showMsg("");
     const data = Object.fromEntries(new FormData(form));
-    const email = String(data.email || "").trim().toLowerCase();
-    const password = String(data.password || "");
-    if (!email || !password) return showMsg("Email and password are required.");
+    const email = String(data.email).trim().toLowerCase();
+    const password = String(data.password);
 
-    const user = getUsers().find(u => u.email === email && u.password === password);
-    if (!user) return showMsg("Invalid credentials.");
+    const user = getUsers().find((u) => u.email === email && u.password === password);
+    if (!user) return showMsg("Invalid email or password.");
 
-    setSession({ email });
-    location.href = REDIRECT_AFTER_AUTH;
+    setSession(user);
+
+    // Redirect to user profile after successful login
+    location.href = "user-profile.html";
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const signupForm = document.getElementById("signupForm");
-  const loginForm  = document.getElementById("loginForm");
-  if (signupForm) bindSignup(signupForm);
-  if (loginForm)  bindLogin(loginForm);
-});
+// Automatically wire up the right form depending on the page
+const signupForm = document.getElementById("signupForm");
+const loginForm = document.getElementById("loginForm");
+if (signupForm) onSignup(signupForm);
+if (loginForm) onLogin(loginForm);
+
+// Helper to get userId header for API requests
+export function getUserIdHeader() {
+  const s = getSession();
+  return s && s.email ? s.email.toLowerCase() : "demo";
+}
