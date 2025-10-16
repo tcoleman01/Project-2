@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+  // Simple redirect for GitHub Pages
+  if (!location.href.includes("login.html")) {
+    window.location.replace("./login.html");
+  }
+</script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Page</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Personal Page</h1>
+      </header>
+    </div>
+
+    <!-- Quick links to demo pages (add-only) -->
+    <nav class="container my-3">
+      <div class="btn-group flex-wrap" role="group" aria-label="Theresa demo links">
+        <a class="btn btn-outline-primary btn-sm" href="./signup.html">Sign Up</a>
+        <a class="btn btn-outline-primary btn-sm" href="./login.html">Log In</a>
+        <a class="btn btn-outline-primary btn-sm" href="./account.html">My Account</a>
+        <a class="btn btn-outline-secondary btn-sm" href="./game.html?slug=stardew-valley"
+          >Game: Stardew Valley</a
+        >
+      </div>
+    </nav>
+
+    <!--User stats container-->
+    <div class="container" id="user-stats">
+      <h2>Stats. Yours to be exact.</h2>
+      <div class="row">
+        <div class="col-md-3 stat-card">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title" id="total-games"></h5>
+              <p class="card-text">Total # of games</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 stat-card">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title" id="completed-games"></h5>
+              <p class="card-text">Completed</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 stat-card">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title" id="hours-logged"></h5>
+              <p class="card-text">Hours Logged</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 stat-card">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title" id="total-spent"></h5>
+              <p class="card-text">Total Spent</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--Container for personal game catalogue-->
+    <div class="container py-4" id="personal-catalogue">
+      <div class="row">
+        <!--Filter section-->
+        <div class="col-lg-3">
+          <div class="sidebar">
+            <div class="sidebar-header">Filters</div>
+            <div class="filter-section">
+              <label>Search</label>
+              <input type="text" class="form-control" placeholder="Search your games..." />
+            </div>
+            <div class="filter-section">
+              <label>Status</label>
+              <select class="form-select" id="status-filter">
+                <option selected>All Statuses</option>
+                <option>Completed</option>
+                <option>Playing</option>
+                <option>Backlog</option>
+                <option>Wishlist</option>
+              </select>
+            </div>
+
+            <div class="filter-section">
+              <label>Genre</label>
+              <select class="form-select" id="genre-filter">
+                <option selected>All Genres</option>
+                <option>Action</option>
+                <option>Adventure</option>
+                <option>RPG</option>
+                <option>Strategy</option>
+                <option>Fighting</option>
+                <option>FPS</option>
+                <option>Platformer</option>
+                <option>Puzzle</option>
+                <option>Racing</option>
+                <option>MMORPG</option>
+                <option>Sandbox</option>
+                <option>Survival</option>
+                <option>Roguelike</option>
+                <option>Horror</option>
+                <option>Sports</option>
+                <option>Simulation</option>
+              </select>
+            </div>
+
+            <div class="filter-section">
+              <label>Platform</label>
+              <select class="form-select" id="platform-filter">
+                <option selected>All Platforms</option>
+                <option>PC</option>
+                <option>PlayStation 5</option>
+                <option>PlayStation 4</option>
+                <option>PlayStation 3</option>
+                <option>PlayStation 2</option>
+                <option>PlayStation</option>
+                <option>PlayStation Vita</option>
+                <option>Xbox Series X</option>
+                <option>Xbox One</option>
+                <option>Xbox 360</option>
+                <option>Nintendo Switch</option>
+                <option>Nintendo Wii U</option>
+                <option>Nintendo Wii</option>
+                <option>Nintendo GameCube</option>
+                <option>Nintendo 64</option>
+                <option>SNES</option>
+                <option>Nintendo 3DS</option>
+                <option>Nintendo DS</option>
+                <option>Game Boy Advance SP</option>
+                <option>Game Boy Advance</option>
+                <option>Game Boy Color</option>
+                <option>Game Boy</option>
+                <option>Mobile</option>
+              </select>
+            </div>
+
+            <div class="filter-section">
+              <label>Sort By</label>
+              <select class="form-select" id="sort-filter">
+                <option selected>Title (A-Z)</option>
+                <option>Title (Z-A)</option>
+                <option>Release Date (Newest)</option>
+                <option>Release Date (Oldest)</option>
+                <option>Hours Played (Most)</option>
+                <option>Hours Played (Least)</option>
+                <option>Price (High to Low)</option>
+                <option>Price (Low to High)</option>
+              </select>
+            </div>
+            <button class="btn btn-reset">Reset All Filters</button>
+          </div>
+        </div>
+
+        <div class="col-lg-9">
+          <h2 class="section-header mb-5">The Goods</h2>
+          <span>
+            <button class="btn btn-primary mb-4" id="add-game-btn">Add New Game</button>
+          </span>
+          <div class="game-grid" id="game-section">
+            <!-- Game cards will be dynamically inserted here -->
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-9">
+          <h2 class="section-header mb-5">The Reviews</h2>
+          <span>
+            <button class="btn btn-primary mb-4" id="add-review-btn">Add New Review</button>
+          </span>
+          <div class="reviews-div" id="reviews-section">
+            <p>No reviews yet. Add your first one!</p>
+            <div class="review-card">
+              <div class="review-header">
+                <div>
+                  <h5 class="review-game-title">Game Title</h5>
+                  <div class="review-meta">Reviewed by User123 on 2023-03-15</div>
+                </div>
+                <div class="review-rating-badge">
+                  <div class="review-rating-value">4.5/5</div>
+                  <div class="review-rating-label">Rating</div>
+                </div>
+              </div>
+              <p class="review-text collapsed">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque voluptatem id suscipit perspiciatis iure maiores nesciunt dolorum dolor, facere perferendis modi architecto ex quasi itaque libero ut, consequuntur molestiae? Harum?
+              </p>
+              <button class="show-more-btn" onclick="toggleReview('review-1', this)">Show More</button>
+              <div class="review-actions">
+                <button class="btn-review-action">Edit</button>
+                <button class="btn-review-action btn-review-delete">Delete</button>
+              </div>
+              </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Game Modal -->
+    <!-- Current input is title, genre, platform, status, hours logged, and price-->
+    <div
+      class="modal fade"
+      id="add-game-modal"
+      tabindex="-1"
+      aria-labelledby="add-game-modal-label"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="add-game-modal-label">Add a New Game</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="new-game-form">
+              <div class="mb-3">
+                <label for="game-title" class="form-label">Game Title</label>
+                <input type="text" class="form-control" id="game-title" required />
+              </div>
+              <div class="mb-3">
+                <label for="game-genre" class="form-label">Genre</label>
+                <select class="form-select" id="game-genre">
+                  <option>Action</option>
+                  <option>Adventure</option>
+                  <option>RPG</option>
+                  <option>Strategy</option>
+                  <option>Fighting</option>
+                  <option>FPS</option>
+                  <option>Platformer</option>
+                  <option>Puzzle</option>
+                  <option>Racing</option>
+                  <option>MMORPG</option>
+                  <option>Sandbox</option>
+                  <option>Survival</option>
+                  <option>Roguelike</option>
+                  <option>Horror</option>
+                  <option>Sports</option>
+                  <option>Simulation</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="game-platform" class="form-label">Platform</label>
+                <select class="form-select" id="game-platform">
+                  <option>PC</option>
+                  <option>PlayStation 5</option>
+                  <option>PlayStation 4</option>
+                  <option>PlayStation 3</option>
+                  <option>PlayStation 2</option>
+                  <option>PlayStation</option>
+                  <option>PlayStation Vita</option>
+                  <option>Xbox Series X</option>
+                  <option>Xbox One</option>
+                  <option>Xbox 360</option>
+                  <option>Nintendo Switch</option>
+                  <option>Nintendo Wii U</option>
+                  <option>Nintendo Wii</option>
+                  <option>Nintendo GameCube</option>
+                  <option>Nintendo 64</option>
+                  <option>SNES</option>
+                  <option>Nintendo 3DS</option>
+                  <option>Nintendo DS</option>
+                  <option>Game Boy Advance SP</option>
+                  <option>Game Boy Advance</option>
+                  <option>Game Boy Color</option>
+                  <option>Game Boy</option>
+                  <option>Mobile</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="game-status" class="form-label">Status</label>
+                <select class="form-select" id="game-status">
+                  <option value="Playing" selected>Playing</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Backlog">Backlog</option>
+                  <option value="Wishlist">Wishlist</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="game-hours" class="form-label">Hours Logged</label>
+                <input type="number" class="form-control" id="game-hours" min="0" value="0" />
+              </div>
+              <div class="mb-3">
+                <label for="game-price" class="form-label">Price</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="game-price"
+                  min="0"
+                  step="0.01"
+                  value="0"
+                />
+              </div>
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success" id="submit-add-game">Submit</button>
+          </div>
+          </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Edit Game Modal -->
+    <div class="modal fade" id="edit-game-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Game</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-game-form">
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select id="edit-status" class="form-select">
+              <option>Backlog</option>
+              <option>Playing</option>
+              <option>Completed</option>
+              <option>Wishlist</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Hours Played</label>
+            <input id="edit-hours" type="number" min="0" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Price Paid</label>
+            <input id="edit-price" type="number" min="0" step="0.01" class="form-control">
+          </div>
+          <button id="save-edit-btn" class="btn btn-primary">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+    <script src="./js/frontend.js"></script>
+  </body>
+</html>
