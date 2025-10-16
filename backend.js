@@ -17,24 +17,24 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files but DO NOT auto-load index.html
+// Serve static files but do not auto-load index.html
 app.use(
   express.static(path.join(__dirname, "frontend"), {
-    index: false,
+    index: false, // prevents express from auto-serving index.html at root
   })
 );
 
-// Root route manually sends login.html first
+// Root route now loads the new login page (which is index.html)
 app.get("/", (_req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "login.html"));
+  res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
 // Explicit HTML routes
 app.get("/index.html", (_req, res) =>
   res.sendFile(path.join(__dirname, "frontend", "index.html"))
 );
-app.get("/login.html", (_req, res) =>
-  res.sendFile(path.join(__dirname, "frontend", "login.html"))
+app.get("/user-profile.html", (_req, res) =>
+  res.sendFile(path.join(__dirname, "frontend", "user-profile.html"))
 );
 app.get("/signup.html", (_req, res) =>
   res.sendFile(path.join(__dirname, "frontend", "signup.html"))
@@ -55,5 +55,5 @@ app.use("/api/", userGamesRouter);
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
-  console.log(` Default page: login.html`);
+  console.log(`Default page: index.html (login page)`);
 });
