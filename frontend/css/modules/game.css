@@ -1,3 +1,31 @@
 /* Game detail & grid */
 .game-card .card-title { font-weight: 700; }
 .game-card--sheet { padding: 1rem; }
+
+/* --- Game grid layout --- */
+.game-grid,
+#game-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);     /* 3 per row on desktop */
+  gap: 1rem;
+}
+
+/* Responsive: 2 per row on tablets, 1 on phones */
+@media (max-width: 992px) {
+  .game-grid,
+  #game-section { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 576px) {
+  .game-grid,
+  #game-section { grid-template-columns: 1fr; }
+}
+
+/* Card sizing and image crop */
+.game-card {
+  overflow: hidden;
+}
+.game-card .card-img-top {
+  object-fit: cover;
+  width: 50%;
+  aspect-ratio: 3 / 4;    /* nice portrait crop */
+}

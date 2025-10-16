@@ -1,102 +1,110 @@
 // frontend/js/game.js
-const params = new URLSearchParams(location.search);
-const slug = params.get("slug");
+// Render mock games as image cards on game.html (no backend needed)
 
-// Try primary file, then fallback to mock
-async function loadGames() {
-  // 1) Try games.json
-  try {
-    const r = await fetch("./data/games.json", { cache: "no-store" });
-    if (r.ok) return r.json();
-  } catch (_) {}
-  // 2) Fallback to mock_games.json
-  const res = await fetch("./data/mock_games.json", { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load mock_games.json");
-  return res.json();
-}
-
-// Optional: load mock reviews if not embedded in game
-async function loadMockReviews() {
-  try {
-    const r = await fetch("./data/mock_reviews.json", { cache: "no-store" });
-    if (r.ok) return r.json();
-  } catch (_) {}
-  return [];
-}
-
-function slugify(s) {
-  return String(s || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function getOid(x) {
-  return x && typeof x === "object" && x.$oid ? x.$oid : x;
-}
-
-(async () => {
-  const main = document.querySelector("main") || document.body;
-
-  if (!slug) {
-    main.innerHTML = "<p class='container py-4'>Missing ?slug parameter.</p>";
+(function () {
+  const grid =
+    document.querySelector(".game-grid") ||
+    document.getElementById("game-section") ||
+    document.querySelector("main");
+  if (!grid) {
+    console.warn("game.js: No container (.game-grid or #game-section) found on this page.");
     return;
   }
 
-  try {
-    const games = await loadGames();
+  const searchInput = Array.from(document.querySelectorAll("input.form-control, input[type='search']"))
+    .find(i => /search/i.test(i.placeholder || i.id || ""));
+  const genreFilter  = document.getElementById("genre-filter");
+  const statusFilter = document.getElementById("status-filter");
+  const totalCount   = document.getElementById("total-games");
 
-    // Find by exact slug field first; else fallback to slugified title
-    let game =
-      games.find((g) => g.slug === slug) ||
-      games.find((g) => slugify(g.title) === slug);
+  const slugify = (s) =>
+    String(s || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
-    if (!game) {
-      main.innerHTML = "<p class='container py-4'>Game not found.</p>";
+  const coverOf = (g) =>
+    g.coverUrl || g.image || g.cover || g.thumbnail || "https://via.placeholder.com/480x600?text=No+Cover";
+
+  function metaLine(g) {
+    const bits = [g.platform, g.genre, g.year || g.releaseYear || g.releaseDate].filter(Boolean);
+    return bits.join(" • ");
+  }
+
+  function priceOf(g) {
+    if (g.price == null || isNaN(Number(g.price))) return null;
+    return `$${Number(g.price).toFixed(2)}`;
+  }
+
+  async function loadGames() {
+    const res = await fetch("./data/mock_games.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to load ./data/mock_games.json");
+    return res.json();
+  }
+
+  function renderCards(list) {
+    if (!Array.isArray(list) || !list.length) {
+      grid.innerHTML = `<p class="text-secondary">No games found.</p>`;
+      if (totalCount) totalCount.textContent = "0";
       return;
     }
 
-    const coverEl = document.getElementById("cover");
-    const titleEl = document.getElementById("title");
-    const metaEl = document.getElementById("meta");
-    const descEl = document.getElementById("desc");
-    const communityEl = document.getElementById("community");
+    grid.innerHTML = list.map((g) => {
+      const title = g.title || "Untitled";
+      const img   = coverOf(g);
+      const meta  = metaLine(g);
+      const price = priceOf(g);
+      const slug  = (g.slug && String(g.slug)) || slugify(title);
 
-    if (coverEl) {
-      coverEl.src = game.coverUrl || "https://via.placeholder.com/600x600?text=Cover";
-      coverEl.alt = `${game.title || "Game"} cover`;
-    }
-    if (titleEl) titleEl.textContent = game.title || "(Untitled)";
+     return `
+  <div class="card h-100 shadow-sm game-card">
+    <img src="${img}" alt="${title} cover" class="card-img-top"
+         onerror="this.src='https://via.placeholder.com/480x600?text=No+Cover'">
+    <div class="card-body d-flex flex-column">
+      <h5 class="card-title mb-1">${title}</h5>
+      <div class="text-secondary small mb-2">${meta || ""}</div>
+      ${price ? `<div class="fw-semibold mb-2">${price}</div>` : ""}
+      <div class="mt-auto d-flex gap-2">
+        <a class="btn btn-primary btn-sm" href="./game.html?slug=${encodeURIComponent(slug)}">View</a>
+        ${g.status ? `<span class="badge text-bg-secondary align-self-center">${g.status}</span>` : ""}
+      </div>
+    </div>
+  </div>
+`;
+    }).join("");
 
-    // Be flexible with fields across mock sets
-    const year = game.year || game.releaseYear || game.releaseDate || null;
-    const price = game.price != null ? `$${Number(game.price).toFixed(2)}` : null;
-    const metaBits = [game.platform, year, price].filter(Boolean).join(" • ");
-    if (metaEl) metaEl.textContent = metaBits;
-
-    if (descEl) descEl.textContent = game.description || "No description.";
-
-    // Reviews: prefer embedded, else fallback to mock_reviews.json by gameId
-    let ratings = [];
-    if (Array.isArray(game.reviews) && game.reviews.length) {
-      ratings = game.reviews.map((r) => Number(r.rating) || 0).filter((n) => !Number.isNaN(n));
-    } else {
-      const allReviews = await loadMockReviews();
-      const gameId = getOid(game._id);
-      const list = allReviews.filter((r) => getOid(r.gameId) === gameId);
-      ratings = list.map((r) => Number(r.rating) || 0).filter((n) => !Number.isNaN(n));
-    }
-
-    if (communityEl) {
-      if (ratings.length) {
-        const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-        communityEl.textContent = `Community: ${ratings.length} reviews • Avg ${avg.toFixed(1)}/5`;
-      } else {
-        communityEl.textContent = "No community reviews yet.";
-      }
-    }
-  } catch (err) {
-    console.error(err);
-    main.innerHTML = "<p class='container py-4'>Error loading game data.</p>";
+    if (totalCount) totalCount.textContent = String(list.length);
   }
+
+  function applyFilters(all) {
+    const q = (searchInput?.value || "").trim().toLowerCase();
+    const g = (genreFilter?.value || "").trim();
+    const s = (statusFilter?.value || "").trim();
+
+    const filtered = all.filter((item) => {
+      const hay = `${item.title || ""} ${item.genre || ""} ${item.platform || ""}`.toLowerCase();
+      const qok = !q || hay.includes(q);
+      const gok = !g || g === "All Genres" || item.genre === g;
+      const sok = !s || s === "All Statuses" || item.status === s;
+      return qok && gok && sok;
+    });
+
+    renderCards(filtered);
+  }
+
+  async function init() {
+    try {
+      const allGames = await loadGames();
+      renderCards(allGames);
+
+      searchInput && searchInput.addEventListener("input", () => applyFilters(allGames));
+      genreFilter && genreFilter.addEventListener("change", () => applyFilters(allGames));
+      statusFilter && statusFilter.addEventListener("change", () => applyFilters(allGames));
+    } catch (err) {
+      console.error(err);
+      grid.innerHTML = `<div class="alert alert-warning">Could not load mock game data. Ensure <code>frontend/data/mock_games.json</code> exists.</div>`;
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", init);
 })();
