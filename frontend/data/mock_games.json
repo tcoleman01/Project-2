@@ -2,6 +2,7 @@
   {
     "_id": { "$oid": "000000000000000000000001" },
     "title": "Elden Ring",
+    "slug": "elden-ring",
     "platform": "PC",
     "year": 2022,
     "price": 59.99,
@@ -13,6 +14,7 @@
   {
     "_id": { "$oid": "000000000000000000000002" },
     "title": "Stardew Valley",
+    "slug": "stardew-valley",
     "platform": "Switch",
     "year": 2016,
     "price": 14.99,
@@ -24,6 +26,7 @@
   {
     "_id": { "$oid": "000000000000000000000003" },
     "title": "Cyberpunk 2077",
+    "slug": "cyberpunk-2077",
     "platform": "PC",
     "year": 2020,
     "price": 49.99,
@@ -35,6 +38,7 @@
   {
     "_id": { "$oid": "000000000000000000000004" },
     "title": "Hollow Knight",
+    "slug": "hollow-knight",
     "platform": "PC",
     "year": 2017,
     "price": 14.99,
@@ -46,6 +50,7 @@
   {
     "_id": { "$oid": "000000000000000000000005" },
     "title": "The Witcher 3: Wild Hunt",
+    "slug": "the-witcher-3-wild-hunt",
     "platform": "PC",
     "year": 2015,
     "price": 39.99,
