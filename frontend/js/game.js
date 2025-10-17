@@ -11,11 +11,12 @@
     return;
   }
 
-  const searchInput = Array.from(document.querySelectorAll("input.form-control, input[type='search']"))
-    .find(i => /search/i.test(i.placeholder || i.id || ""));
-  const genreFilter  = document.getElementById("genre-filter");
+  const searchInput = Array.from(
+    document.querySelectorAll("input.form-control, input[type='search']")
+  ).find((i) => /search/i.test(i.placeholder || i.id || ""));
+  const genreFilter = document.getElementById("genre-filter");
   const statusFilter = document.getElementById("status-filter");
-  const totalCount   = document.getElementById("total-games");
+  const totalCount = document.getElementById("total-games");
 
   const slugify = (s) =>
     String(s || "")
@@ -24,7 +25,11 @@
       .replace(/(^-|-$)/g, "");
 
   const coverOf = (g) =>
-    g.coverUrl || g.image || g.cover || g.thumbnail || "https://via.placeholder.com/480x600?text=No+Cover";
+    g.coverUrl ||
+    g.image ||
+    g.cover ||
+    g.thumbnail ||
+    "https://via.placeholder.com/480x600?text=No+Cover";
 
   function metaLine(g) {
     const bits = [g.platform, g.genre, g.year || g.releaseYear || g.releaseDate].filter(Boolean);
@@ -49,14 +54,15 @@
       return;
     }
 
-    grid.innerHTML = list.map((g) => {
-      const title = g.title || "Untitled";
-      const img   = coverOf(g);
-      const meta  = metaLine(g);
-      const price = priceOf(g);
-      const slug  = (g.slug && String(g.slug)) || slugify(title);
+    grid.innerHTML = list
+      .map((g) => {
+        const title = g.title || "Untitled";
+        const img = coverOf(g);
+        const meta = metaLine(g);
+        const price = priceOf(g);
+        const slug = (g.slug && String(g.slug)) || slugify(title);
 
-     return `
+        return `
   <div class="card h-100 shadow-sm game-card">
     <img src="${img}" alt="${title} cover" class="card-img-top"
          onerror="this.src='https://via.placeholder.com/480x600?text=No+Cover'">
@@ -71,7 +77,8 @@
     </div>
   </div>
 `;
-    }).join("");
+      })
+      .join("");
 
     if (totalCount) totalCount.textContent = String(list.length);
   }
