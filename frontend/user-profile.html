@@ -175,7 +175,7 @@
         <div class="col-lg-9">
           <h2 class="section-header mb-5">The Goods</h2>
           <span>
-            <button class="btn btn-primary mb-4" id="add-game-btn">Add New Game</button>
+            <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#add-game-modal" id="add-game-btn">Add New Game</button>
           </span>
           <div class="game-grid" id="game-section">
             <!-- Game cards will be dynamically inserted here -->
@@ -214,30 +214,18 @@
           </div>
         </div>
       </div>
-    </div>
 
     <!-- Add Game Modal -->
     <!-- Current input is title, genre, platform, status, hours logged, and price-->
-    <div
-      class="modal fade"
-      id="add-game-modal"
-      tabindex="-1"
-      aria-labelledby="add-game-modal-label"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="add-game-modal" tabindex="-1" aria-labelledby="add-game-modal-label" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="add-game-modal-label">Add a New Game</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form id="new-game-form">
+            <form id="new-game-form"> <!-- Form Id for adding a new game -->
               <div class="mb-3">
                 <label for="game-title" class="form-label">Game Title</label>
                 <input type="text" class="form-control" id="game-title" required />
@@ -306,27 +294,20 @@
               </div>
               <div class="mb-3">
                 <label for="game-price" class="form-label">Price</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="game-price"
-                  min="0"
-                  step="0.01"
-                  value="0"
-                />
+                <input type="number" class="form-control" id="game-price" min="0" step="0.01" value="0" />
               </div>
-            
-          </div>
+          </div>        
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-success" id="submit-add-game">Submit</button>
           </div>
-          </div>
-          </form>
+        </div>
+
         </div>
       </div>
     </div>
-    
+  </div>
+
     <!-- Edit Game Modal -->
     <div class="modal fade" id="edit-game-modal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
@@ -365,8 +346,10 @@
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
       crossorigin="anonymous"
     ></script>
-    <script src="./js/frontend.js"></script>
-    <script>
+    <script src="./js/user-profile.js"></script>
+
+
+    <!-- <script>
 (function () {
   const grid = document.getElementById("game-section");
   if (!grid) return; // only run on this page
@@ -523,7 +506,7 @@
 
   window.addEventListener("DOMContentLoaded", init);
 })();
-</script>
+</script> -->
 
   </body>
 </html>

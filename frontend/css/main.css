@@ -177,8 +177,8 @@ a:hover {
   overflow-y: auto;
 }
 
-.sidebar-header,
-.modal-header {
+.sidebar-header
+{
   color: var(--text);
   font-size: 1.1rem;
   font-weight: 600;
@@ -196,7 +196,7 @@ a:hover {
 }
 
 .filter-section label,
-#add-game-modal .form-label {
+{
   color: var(--muted);
   font-size: 0.85rem;
   font-weight: 600;
