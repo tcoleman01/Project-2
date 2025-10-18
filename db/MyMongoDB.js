@@ -394,6 +394,22 @@ function MyMongoDB({
     }
   };
 
+  // Autocomplete search of games from the master games collection
+  me.autocompleteGameTitles = async (query, limit = 10) => {
+    const { client, games } = connect();
+    if (!query) return [];
+
+    try {
+      return await games
+        .find({ title: { $regex: query, $options: "i" } })
+        .limit(limit)
+        .project({ title: 1 })
+        .toArray();
+    } finally {
+      await client.close();
+    }
+  };
+
   return me;
 }
 

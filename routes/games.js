@@ -4,6 +4,13 @@ import { slugify } from "./utils/slugify.js";
 
 const router = express.Router();
 
+// GET autocomplete suggestions for game titles
+router.get("/games/autocomplete", async (req, res) => {
+  const query = req.query.query || "";
+  const results = await MyDB.autocompleteGameTitles(query, 10);
+  res.json(results.map((g) => ({ id: g._id, title: g.title })));
+});
+
 // GET all games in the games collection
 router.get("/games", async (req, res) => {
   console.log("GET /games", req.query);
@@ -40,8 +47,7 @@ router.get("/games/:idOrSlug", async (req, res) => {
 // POST to add a new game to the games collection
 router.post("/games", async (req, res) => {
   try {
-    const { title, platform, year, price, genre, status, hours, coverUrl, description } =
-      req.body || {};
+    const { title, platform, year, price, genre, status, coverUrl, description } = req.body || {};
     if (!title || !platform)
       return res.status(400).json({ error: "title and platform are required" });
     const doc = {
@@ -52,7 +58,6 @@ router.post("/games", async (req, res) => {
       price: price ? Number(price) : undefined,
       genre: genre || undefined,
       status: status || undefined,
-      hours: hours ? Number(hours) : undefined,
       coverUrl: coverUrl || "",
       description: description || "",
     };
@@ -75,7 +80,6 @@ router.patch("/games/:id", async (req, res) => {
       "price",
       "genre",
       "status",
-      "hours",
       "coverUrl",
       "description",
     ];
@@ -84,7 +88,6 @@ router.patch("/games/:id", async (req, res) => {
     if ("title" in updates) updates.slug = slugify(updates.title);
     if ("year" in updates) updates.year = Number(updates.year);
     if ("price" in updates) updates.price = Number(updates.price);
-    if ("hours" in updates) updates.hours = Number(updates.hours);
     const game = await MyDB.updateGameById(req.params.id, updates);
     if (!game) return res.status(404).json({ error: "Game not found" });
     res.json({ ok: true, game });
