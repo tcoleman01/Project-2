@@ -366,6 +366,7 @@ function reviewListings() {
       const data = await res.json();
       console.log("Fetched reviews:", data);
       const reviews = Array.isArray(data.items) ? data.items : [];
+      console.log("Reviews array:", reviews);
       renderReviews(reviews);
     } catch (err) {
       console.error("Error fetching reviews:", err);

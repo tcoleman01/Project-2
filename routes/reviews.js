@@ -1,5 +1,6 @@
 import express from "express";
 import MyDB from "../db/MyMongoDB.js";
+import { ObjectId } from "mongodb";
 
 const router = express.Router();
 
@@ -24,11 +25,33 @@ router.post("/reviews", async (req, res) => {
   console.log("Received POST request for api/reviews");
 
   try {
-    const rating = Number(req.body?.rating);
-    if (!(rating >= 1 && rating <= 5))
-      return res.status(400).json({ error: "rating must be 1..5" });
-    const review = await MyDB.createReview(req.params.gameId, { rating, text: req.body?.text });
-    res.status(201).json({ ok: true, review });
+    const { gameId, userId, rating, text } = req.body;
+    if (!gameId || !userId)
+      return res.status(400).json({ error: "gameId and userId are required" });
+
+    // Check if the game exists
+    const game = await MyDB.getGameByIdOrSlug(gameId);
+    if (!game) return res.status(404).json({ error: "Game not found" });
+
+    // Check if the user has already reviewed this game
+    const existing = await MyDB.getReviews({ userId, gameId });
+    if (existing.length > 0)
+      return res.status(409).json({ error: "You already reviewed this game" });
+
+    const r = Number(rating);
+    if (!(r >= 1 && r <= 5)) return res.status(400).json({ error: "rating must be 1..5" });
+
+    const newReview = {
+      gameId: new ObjectId(game._id),
+      userId: new ObjectId(userId),
+      gameTitle: game.title,
+      rating: r,
+      text: text?.trim() || "",
+      createdAt: new Date(),
+    };
+
+    const review = await MyDB.createReview(newReview);
+    res.json({ ok: true, review });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Server error" });

@@ -103,6 +103,7 @@ function MyMongoDB({
     try {
       const data = await reviews
         .find(query)
+        .sort({ createdAt: -1 })
         .limit(pageSize)
         .skip(pageSize * page)
         .toArray();
@@ -115,19 +116,10 @@ function MyMongoDB({
     }
   };
 
-  //UPDATE - MOVE DOC ELEMENTS TO ROUTES
-  me.createReview = async (gameId, { rating, text = "" }) => {
+  me.createReview = async (newReview) => {
     const { client, reviews } = connect();
     try {
-      const doc = {
-        gameId: new ObjectId(gameId),
-        userId: null,
-        rating: Number(rating),
-        text: String(text).trim(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      const r = await reviews.insertOne(doc);
+      const r = await reviews.insertOne(newReview);
       return await reviews.findOne({ _id: r.insertedId });
     } finally {
       await client.close();
@@ -308,7 +300,11 @@ function MyMongoDB({
         },
 
         // Clean up and sort
-        { $project: { allReviews: 0 } },
+        {
+          $project: {
+            allReviews: 0,
+          },
+        },
         { $sort: { updatedAt: -1 } },
       ];
 
