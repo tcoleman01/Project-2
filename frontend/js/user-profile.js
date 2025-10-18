@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// Autocomplete setup for the game title input field
 function setupAutocomplete() {
   const input = document.getElementById("game-title");
   const hiddenInput = document.getElementById("game-id");
@@ -38,7 +39,12 @@ function setupAutocomplete() {
         const games = await res.json();
 
         suggestionsBox.innerHTML = games
-          .map((g) => `<li data-id="${g.id}">${g.title}</li>`)
+          .map(
+            (g) => `<li data-id="${g.id}"
+          data-genre="${g.genre || ""}
+          data-platform="${g.platform || ""}
+          data-price="${g.price || ""}">${g.title}</li>`
+          )
           .join("");
 
         suggestionsBox.querySelectorAll("li").forEach((item) => {
@@ -46,6 +52,21 @@ function setupAutocomplete() {
             input.value = item.textContent;
             hiddenInput.value = item.getAttribute("data-id");
             suggestionsBox.innerHTML = "";
+
+            const game = games.find((g) => g.id === item.getAttribute("data-id"));
+            console.log("Selected game:", game);
+            if (game) {
+              document.getElementById("game-price").value = game.price ?? 0;
+
+              const genreInput = document.getElementById("game-genre");
+              const platformInput = document.getElementById("game-platform");
+              if ([...genreInput.options].some((opt) => opt.value === game.genre)) {
+                genreInput.value = game.genre;
+              }
+              if ([...platformInput.options].some((opt) => opt.value === game.platform)) {
+                platformInput.value = game.platform;
+              }
+            }
           });
         });
       } catch (error) {

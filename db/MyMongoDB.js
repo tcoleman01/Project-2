@@ -403,7 +403,7 @@ function MyMongoDB({
       return await games
         .find({ title: { $regex: query, $options: "i" } })
         .limit(limit)
-        .project({ title: 1 })
+        .project({ title: 1, genre: 1, platform: 1, price: 1 })
         .toArray();
     } finally {
       await client.close();

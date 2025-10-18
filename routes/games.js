@@ -6,9 +6,20 @@ const router = express.Router();
 
 // GET autocomplete suggestions for game titles
 router.get("/games/autocomplete", async (req, res) => {
+  console.log("GET /api/games/autocomplete", req.query);
+
   const query = req.query.query || "";
   const results = await MyDB.autocompleteGameTitles(query, 10);
-  res.json(results.map((g) => ({ id: g._id, title: g.title })));
+  console.log("Autocomplete results:", results);
+  res.json(
+    results.map((g) => ({
+      id: g._id,
+      title: g.title,
+      genre: g.genre,
+      platform: g.platform,
+      price: g.price,
+    }))
+  );
 });
 
 // GET all games in the games collection
