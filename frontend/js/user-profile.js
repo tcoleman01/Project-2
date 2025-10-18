@@ -2,6 +2,95 @@ console.log("user-profile.js loaded");
 
 const userId = "200000000000000000000001";
 
+// Run autocomplete setup when the Add Game modal is shown
+document.addEventListener("DOMContentLoaded", () => {
+  const addGameModalEl = document.getElementById("add-game-modal");
+  if (!addGameModalEl) return;
+
+  // Bootstrap fires this event whenever the modal becomes visible
+  addGameModalEl.addEventListener("shown.bs.modal", () => {
+    setupAutocomplete();
+  });
+});
+
+function setupAutocomplete() {
+  const input = document.getElementById("game-title");
+  const hiddenInput = document.getElementById("game-id");
+  const suggestionsBox = document.getElementById("suggestions");
+
+  if (input.dataset.autocompleteBound === "true") return;
+  input.dataset.autocompleteBound = "true";
+  let timer;
+
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+    const query = input.value.trim();
+
+    if (!query) {
+      suggestionsBox.innerHTML = "";
+      hiddenInput.value = "";
+      return;
+    }
+
+    timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/games/autocomplete?query=${encodeURIComponent(query)}`);
+        const games = await res.json();
+
+        suggestionsBox.innerHTML = games
+          .map((g) => `<li data-id="${g.id}">${g.title}</li>`)
+          .join("");
+
+        suggestionsBox.querySelectorAll("li").forEach((item) => {
+          item.addEventListener("click", () => {
+            input.value = item.textContent;
+            hiddenInput.value = item.getAttribute("data-id");
+            suggestionsBox.innerHTML = "";
+          });
+        });
+      } catch (error) {
+        console.error("Error fetching autocomplete suggestions:", error);
+      }
+    }, 300);
+  });
+}
+
+// addGames handles the "Add New Game" form submission
+function addGames() {
+  const addGameForm = document.getElementById("new-game-form");
+
+  addGameForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const uId = userId;
+    const gameId = addGameForm.elements["game-id"].value;
+    const hoursPlayed = addGameForm.elements["hours-played"].value.trim();
+    const moneySpent = addGameForm.elements["money-spent"].value.trim();
+    const status = addGameForm.elements["status"].value;
+
+    const res = await fetch(`/api/userGames/userId/${userId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        uId,
+        gameId,
+        status,
+        moneySpent,
+        hoursPlayed,
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("Game added successfully!");
+    } else {
+      alert(data.error || "Failed to add game.");
+    }
+  });
+}
+
 // gameListings handles fetching and rendering the user's game collection
 function gameListings() {
   const me = {};

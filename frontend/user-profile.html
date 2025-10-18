@@ -226,9 +226,11 @@
           </div>
           <div class="modal-body">
             <form id="new-game-form"> <!-- Form Id for adding a new game -->
-              <div class="mb-3">
+              <div class="mb-3 position-relative">
                 <label for="game-title" class="form-label">Game Title</label>
                 <input type="text" class="form-control" id="game-title" required />
+                <input type="hidden" id="game-id" />
+                <ul id="suggestions"></ul>
               </div>
               <div class="mb-3">
                 <label for="game-genre" class="form-label">Genre</label>

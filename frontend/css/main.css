@@ -569,7 +569,7 @@ a:hover {
 }
 
 /* ================= Autocomplete Dropdown ================= */
-#game-suggestions {
+#suggestions {
   background: var(--bg-2);
   border: 1px solid rgba(255, 255, 255);
   border-radius: 14px;
@@ -577,9 +577,17 @@ a:hover {
   box-shadow: var(--shadow);
   color: var(--text);
   overflow: hidden;
+  position: absolute;
+  top: 100%;          /* below the input */
+  left: 0;
+  width: 100%;
+  z-index: 1056;
+  margin-top: 4px;
+  padding: 0;
+  list-style: none;
 }
 
-#game-suggestions li {
+#suggestions li {
   padding: 0.65rem 0.9rem;
   border-bottom: 1px solid rgba(255, 255, 255);
   transition:
@@ -587,18 +595,17 @@ a:hover {
     color 0.15s ease;
 }
 
-#game-suggestions li:hover,
-#game-suggestions li:focus {
-  background: rgba(255, 255, 255);
-  color: var(--accent);
+#suggestions li:hover,
+#suggestions li:focus {
+  background: rgb(79, 115, 233);
   cursor: pointer;
 }
 
-#game-suggestions li:last-child {
+#suggestions li:last-child {
   border-bottom: none;
 }
 
-#game-suggestions strong {
+#suggestions strong {
   color: var(--secondary);
 }
 
