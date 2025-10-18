@@ -3,10 +3,15 @@ import MyDB from "../db/MyMongoDB.js";
 
 const router = express.Router();
 
+// GET all reviews, optionally filtered by userId and/or gameId
 router.get("/reviews", async (req, res) => {
   console.log("GET /reviews");
   try {
-    const items = await MyDB.getReviews(req.query);
+    const { userId, gameId } = req.query;
+    const filter = {};
+    if (userId) filter.userId = userId;
+    if (gameId) filter.gameId = gameId;
+    const items = await MyDB.getReviews(filter);
     res.json({ items });
   } catch (e) {
     console.error(e);
@@ -14,6 +19,7 @@ router.get("/reviews", async (req, res) => {
   }
 });
 
+// POST to create a new review for a specific game
 router.post("/reviews", async (req, res) => {
   console.log("Received POST request for api/reviews");
 
@@ -29,6 +35,7 @@ router.post("/reviews", async (req, res) => {
   }
 });
 
+// PATCH to update an existing review by its ID
 router.patch("/reviews/:id", async (req, res) => {
   try {
     const updates = {};
@@ -48,6 +55,7 @@ router.patch("/reviews/:id", async (req, res) => {
   }
 });
 
+// DELETE a review by its ID
 router.delete("/reviews/:id", async (req, res) => {
   try {
     const ok = await MyDB.deleteReviewById(req.params.id);

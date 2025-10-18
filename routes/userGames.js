@@ -99,7 +99,7 @@ router.patch("/userGames/:id", async (req, res) => {
       const p = Number(moneySpent);
       if (isNaN(p) || p < 0)
         return res.status(400).json({ error: "price must be a non-negative number" });
-      updates.price = p;
+      updates.moneySpent = p;
     }
 
     // Once everythin checks out, update the userGame entry

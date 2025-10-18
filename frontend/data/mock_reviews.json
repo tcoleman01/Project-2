@@ -4,34 +4,44 @@
     "gameId": { "$oid": "000000000000000000000001" },
     "userId": { "$oid": "200000000000000000000001" },
     "rating": 5,
-    "text": "An absolute masterpiece of open-world design and combat depth."
+    "text": "An absolute masterpiece of open-world design and combat depth.",
+    "createdAt": "2025-10-18T04:55:26.907+00:00",
+    "updatedAt": "2025-10-18T04:55:26.907+00:00"
   },
   {
     "_id": { "$oid": "100000000000000000000002" },
     "gameId": { "$oid": "000000000000000000000001" },
     "userId": { "$oid": "200000000000000000000002" },
     "rating": 4,
-    "text": "Incredible world, but some boss fights are too punishing for casual players."
+    "text": "Incredible world, but some boss fights are too punishing for casual players.",
+    "createdAt": "2025-10-18T04:55:26.907+00:00",
+    "updatedAt": "2025-10-18T04:55:26.907+00:00"
   },
   {
     "_id": { "$oid": "100000000000000000000003" },
     "gameId": { "$oid": "000000000000000000000002" },
     "userId": { "$oid": "200000000000000000000001" },
     "rating": 5,
-    "text": "A relaxing and addictive farming experience — my go-to comfort game."
+    "text": "A relaxing and addictive farming experience — my go-to comfort game.",
+    "createdAt": "2025-10-18T04:55:26.907+00:00",
+    "updatedAt": "2025-10-18T04:55:26.907+00:00"
   },
   {
     "_id": { "$oid": "100000000000000000000004" },
     "gameId": { "$oid": "000000000000000000000004" },
     "userId": { "$oid": "200000000000000000000002" },
     "rating": 4,
-    "text": "Beautiful art and tight controls, though quite difficult at times."
+    "text": "Beautiful art and tight controls, though quite difficult at times.",
+    "createdAt": "2025-10-18T04:55:26.907+00:00",
+    "updatedAt": "2025-10-18T04:55:26.907+00:00"
   },
   {
     "_id": { "$oid": "100000000000000000000005" },
     "gameId": { "$oid": "000000000000000000000005" },
     "userId": { "$oid": "200000000000000000000001" },
     "rating": 5,
-    "text": "Still one of the best RPGs ever made — deep story and memorable quests."
+    "text": "Still one of the best RPGs ever made — deep story and memorable quests.",
+    "createdAt": "2025-10-18T04:55:26.907+00:00",
+    "updatedAt": "2025-10-18T04:55:26.907+00:00"
   }
 ]

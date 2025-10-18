@@ -2,15 +2,20 @@ console.log("user-profile.js loaded");
 
 const userId = "200000000000000000000001";
 
-// Run autocomplete setup when the Add Game modal is shown
+// Initialize event listeners when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
   const addGameModalEl = document.getElementById("add-game-modal");
-  if (!addGameModalEl) return;
+  if (addGameModalEl) {
+    addGameModalEl.addEventListener("shown.bs.modal", () => {
+      setupAutocomplete();
+      addGames();
+    });
+  }
 
-  addGameModalEl.addEventListener("shown.bs.modal", () => {
-    setupAutocomplete();
-    addGames();
-  });
+  const editGameModalEl = document.getElementById("edit-game-modal");
+  if (editGameModalEl) {
+    editGames();
+  }
 });
 
 // Autocomplete setup for the game title input field
@@ -117,6 +122,93 @@ function addGames() {
   });
 }
 
+// Handle Edit button click
+document.addEventListener("click", async (e) => {
+  const editBtn = e.target.closest(".btn-card-action:not(.btn-delete)");
+  if (!editBtn) return;
+
+  const userGameId = editBtn.dataset.id;
+  console.log("Edit button clicked for:", userGameId);
+
+  // Fetch the user's games and find the one we clicked
+  const res = await fetch(`/api/userGames?userId=${userId}`);
+  const data = await res.json();
+  const game = (data.games || []).find(g => g._id === userGameId);
+
+  if (!game) {
+    alert("Game not found in your collection.");
+    return;
+  }
+
+  // Pre-fill the edit modal fields
+  document.getElementById("edit-game-id").value = userGameId;
+  document.getElementById("edit-status").value = game.status || "Playing";
+  document.getElementById("edit-hours").value = game.hoursPlayed || 0;
+  document.getElementById("edit-price").value = game.moneySpent || 0;
+
+  // Show the modal
+  const modalEl = document.getElementById("edit-game-modal");
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
+});
+
+// Handle Delete button clicks
+document.addEventListener("click", async (e) => {
+  const deleteBtn = e.target.closest(".btn-delete");
+  if (!deleteBtn) return;
+
+  const userGameId = deleteBtn.dataset.id;
+  if (!confirm("Are you sure you want to delete this game from your library?")) return;
+
+  try {
+    const res = await fetch(`/api/userGames/${userGameId}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      console.log("Game deleted:", data);
+      await myGames.refreshGames();
+      await myStats.refreshStats();
+    } else {
+      alert(data.error || "Failed to delete game.");
+    }
+  } catch (err) {
+    console.error("Error deleting game:", err);
+    alert("Error deleting game. Please try again later.");
+  }
+});
+
+function editGames() {
+  const editGameForm = document.getElementById("edit-game-form");
+
+  editGameForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById("edit-game-id").value;
+    const status = document.getElementById("edit-status").value;
+    const hoursPlayed = document.getElementById("edit-hours").value.trim();
+    const moneySpent = document.getElementById("edit-price").value.trim();
+
+    const res = await fetch(`/api/userGames/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, hoursPlayed, moneySpent }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      console.log("Game updated:", data);
+      const modal = bootstrap.Modal.getInstance(document.getElementById("edit-game-modal"));
+      if (modal) modal.hide();
+      await myGames.refreshGames();
+      await myStats.refreshStats();
+    } else {
+      alert(data.error || "Failed to update game.");
+    }
+  });
+}
+
 // gameListings handles fetching and rendering the user's game collection
 function gameListings() {
   const me = {};
@@ -168,8 +260,8 @@ function gameListings() {
                                 </div>
                                 </div>
                                 <div class="card-actions">
-                                    <button class="btn-card-action">Edit</button>
-                                    <button class="btn-card-action btn-delete">Delete</button>
+                                    <button type="button" class="btn-card-action" data-id="${g._id}">Edit</button>
+                                    <button type="button" class="btn-card-action btn-delete" data-id="${g._id}">Delete</button>
                                 </div>
                             </div>
                 `;
@@ -183,6 +275,7 @@ function gameListings() {
       if (!res.ok) throw new Error("Failed to load user games");
 
       const data = await res.json();
+      console.log("Fetched user games:", data);
       renderGames(data.games);
     } catch (err) {
       console.error("Error fetching user games:", err);
@@ -227,10 +320,66 @@ function userStats() {
 }
 
 function reviewListings() {
-  // Placeholder for future user profile related JS functionality
+  const me = {};
+
+  const wrap = document.getElementById("review-section");
+
+  const renderReviews = (reviews) => {
+    if (!wrap) return;
+
+    console.log("Rendering reviews:", reviews);
+    if (!reviews.length) {
+      wrap.innerHTML = "<p>No reviews yet. Add your first here!</p>";
+      return;
+    }
+    wrap.innerHTML = "";
+    for (const r of reviews) {
+      const card = document.createElement("div");
+      card.className = "review-card";
+      card.innerHTML = `
+        <div class="review-header">
+          <div>
+            <h5 class="review-game-title">${r.gameTitle}</h5>
+            <div class="review-meta">Reviewed on ${r.updatedAt}</div>
+          </div>
+          <div class="review-rating-badge">
+            <div class="review-rating-value">${r.rating}/5</div>
+            <div class="review-rating-label">Rating</div>
+          </div>
+        </div>
+        <p class="review-text collapsed">${r.text}</p>
+        <button class="show-more-btn" onclick="toggleReview('review-1', this)">Show More</button>
+        <div class="review-actions">
+          <button class="btn-review-action">Edit</button>
+          <button class="btn-review-action btn-review-delete">Delete</button>
+        </div>
+        `;
+      wrap.appendChild(card);
+    }
+  };
+
+  me.refreshReviews = async () => {
+    try {
+      const res = await fetch(`/api/reviews?userId=${userId}`);
+      if (!res.ok) throw new Error("Failed to load reviews");
+
+      const data = await res.json();
+      console.log("Fetched reviews:", data);
+      const reviews = Array.isArray(data.items) ? data.items : [];
+      renderReviews(reviews);
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      if (wrap) {
+        wrap.innerHTML = `<p class="text-danger">Failed to load your reviews. Bummer dude.</p>`;
+      }
+    }
+  };
+  return me;
 }
 
 const myGames = gameListings();
 const myStats = userStats();
+const myReviews = reviewListings();
 myGames.refreshGames();
 myStats.refreshStats();
+myReviews.refreshReviews();
