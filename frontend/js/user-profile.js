@@ -7,9 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const addGameModalEl = document.getElementById("add-game-modal");
   if (!addGameModalEl) return;
 
-  // Bootstrap fires this event whenever the modal becomes visible
   addGameModalEl.addEventListener("shown.bs.modal", () => {
     setupAutocomplete();
+    addGames();
   });
 });
 
@@ -56,6 +56,7 @@ function setupAutocomplete() {
             const game = games.find((g) => g.id === item.getAttribute("data-id"));
             console.log("Selected game:", game);
             if (game) {
+              document.getElementById("game-id").value = game.id;
               document.getElementById("game-price").value = game.price ?? 0;
 
               const genreInput = document.getElementById("game-genre");
@@ -83,11 +84,10 @@ function addGames() {
   addGameForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const uId = userId;
     const gameId = addGameForm.elements["game-id"].value;
-    const hoursPlayed = addGameForm.elements["hours-played"].value.trim();
-    const moneySpent = addGameForm.elements["money-spent"].value.trim();
-    const status = addGameForm.elements["status"].value;
+    const hoursPlayed = addGameForm.elements["game-hours"].value.trim();
+    const moneySpent = addGameForm.elements["game-price"].value.trim();
+    const status = addGameForm.elements["game-status"].value;
 
     const res = await fetch(`/api/userGames/userId/${userId}`, {
       method: "POST",
@@ -95,7 +95,7 @@ function addGames() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        uId,
+        userId,
         gameId,
         status,
         moneySpent,
@@ -105,7 +105,12 @@ function addGames() {
 
     const data = await res.json();
     if (res.ok) {
-      alert("Game added successfully!");
+      console.log("Game added to user collection:", data);
+      // Close the modal
+      const addGameModal = bootstrap.Modal.getInstance(document.getElementById("add-game-modal"));
+      if (addGameModal) addGameModal.hide();
+      await myGames.refreshGames();
+      await myStats.refreshStats();
     } else {
       alert(data.error || "Failed to add game.");
     }
