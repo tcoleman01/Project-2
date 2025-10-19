@@ -569,7 +569,7 @@ a:hover {
 }
 
 /* ================= Autocomplete Dropdown ================= */
-#suggestions {
+#suggestions, #review-suggestions {
   background: var(--bg-2);
   border: 1px solid rgba(255, 255, 255);
   border-radius: 14px;
@@ -587,7 +587,7 @@ a:hover {
   list-style: none;
 }
 
-#suggestions li {
+#suggestions li , #review-suggestions li {
   padding: 0.65rem 0.9rem;
   border-bottom: 1px solid rgba(255, 255, 255);
   transition:
@@ -596,16 +596,20 @@ a:hover {
 }
 
 #suggestions li:hover,
-#suggestions li:focus {
+#suggestions li:focus,
+#review-suggestions li:hover,
+#review-suggestions li:focus {
   background: rgb(79, 115, 233);
   cursor: pointer;
 }
 
-#suggestions li:last-child {
+#suggestions li:last-child,
+#review-suggestions li:last-child {
   border-bottom: none;
 }
 
-#suggestions strong {
+#suggestions strong,
+#review-suggestions strong {
   color: var(--secondary);
 }
 

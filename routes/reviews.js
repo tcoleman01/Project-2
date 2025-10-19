@@ -16,7 +16,7 @@ router.get("/reviews", async (req, res) => {
     res.json({ items });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error occurred while fetching reviews" });
   }
 });
 
@@ -48,45 +48,52 @@ router.post("/reviews", async (req, res) => {
       rating: r,
       text: text?.trim() || "",
       createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     const review = await MyDB.createReview(newReview);
     res.json({ ok: true, review });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error occurred while creating review" });
   }
 });
 
 // PATCH to update an existing review by its ID
 router.patch("/reviews/:id", async (req, res) => {
   try {
-    const updates = {};
-    if ("rating" in req.body) {
-      const r = Number(req.body.rating);
-      if (!(r >= 1 && r <= 5)) return res.status(400).json({ error: "rating must be 1..5" });
-      updates.rating = r;
-    }
-    if ("text" in req.body) updates.text = String(req.body.text ?? "").trim();
-    if (!Object.keys(updates).length) return res.status(400).json({ error: "No valid fields" });
-    const review = await MyDB.updateReviewById(req.params.id, updates);
+    const { id } = req.params;
+    const { rating, text } = req.body;
+    const update = {};
+
+    if (!id) return res.status(400).json({ error: "Valid review ID is required" });
+    const r = Number(rating);
+    if (!(r >= 1 && r <= 5)) return res.status(400).json({ error: "rating must be between 1..5" });
+    update.rating = r;
+    update.text = text?.trim() || "";
+    update.updatedAt = new Date();
+
+    const review = await MyDB.updateReviewById(id, update);
     if (!review) return res.status(404).json({ error: "Review not found" });
     res.json({ ok: true, review });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error occurred while updating review" });
   }
 });
 
 // DELETE a review by its ID
 router.delete("/reviews/:id", async (req, res) => {
   try {
-    const ok = await MyDB.deleteReviewById(req.params.id);
-    if (!ok) return res.status(404).json({ error: "Review not found" });
-    res.json({ ok: true });
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: "Valid review ID is required" });
+
+    const deleted = await MyDB.deleteReviewById(id);
+    if (!deleted) return res.status(404).json({ error: "Review not found" });
+    res.json({ ok: true, message: "Review deleted successfully" });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error occurred while deleting review" });
   }
 });
 

@@ -126,24 +126,32 @@ function MyMongoDB({
     }
   };
 
-  //UPDATE AND FIX
   me.updateReviewById = async (id, updates) => {
-    const { client, games } = connect();
+    const { client, reviews } = connect();
+
     try {
-      const reviews = games.db.collection("reviews");
-      const { ObjectId } = await import("mongodb");
-      updates.updatedAt = new Date();
-      await reviews.updateOne({ _id: new ObjectId(id) }, { $set: updates });
-      return await reviews.findOne({ _id: new ObjectId(id) });
+      let query;
+      try {
+        query = { _id: new ObjectId(id) };
+      } catch {
+        query = { _id: id }; // fallback if id isn’t a valid ObjectId
+      }
+
+      const result = await reviews.findOneAndUpdate(
+        query,
+        { $set: updates },
+        { returnDocument: "after" }
+      );
+
+      return result;
     } finally {
       await client.close();
     }
   };
 
   me.deleteReviewById = async (id) => {
-    const { client, games } = connect();
+    const { client, reviews } = connect();
     try {
-      const reviews = games.db.collection("reviews");
       const r = await reviews.deleteOne({ _id: new ObjectId(id) });
       return r.deletedCount > 0;
     } finally {

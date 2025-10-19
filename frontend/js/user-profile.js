@@ -16,9 +16,22 @@ document.addEventListener("DOMContentLoaded", () => {
   if (editGameModalEl) {
     editGames();
   }
+
+  const addReviewModalEl = document.getElementById("add-review-modal");
+  if (addReviewModalEl) {
+    addReviewModalEl.addEventListener("shown.bs.modal", () => {
+      reviewAutocomplete();
+      addReview();
+    });
+  }
+
+  const editReviewModalEl = document.getElementById("edit-review-modal");
+  if (editReviewModalEl) {
+    editReview();
+  }
 });
 
-// Autocomplete setup for the game title input field
+// Autocomplete setup for the game title input field of add game modal
 function setupAutocomplete() {
   const input = document.getElementById("game-title");
   const hiddenInput = document.getElementById("game-id");
@@ -133,7 +146,7 @@ document.addEventListener("click", async (e) => {
   // Fetch the user's games and find the one we clicked
   const res = await fetch(`/api/userGames?userId=${userId}`);
   const data = await res.json();
-  const game = (data.games || []).find(g => g._id === userGameId);
+  const game = (data.games || []).find((g) => g._id === userGameId);
 
   if (!game) {
     alert("Game not found in your collection.");
@@ -152,7 +165,7 @@ document.addEventListener("click", async (e) => {
   modal.show();
 });
 
-// Handle Delete button clicks
+// Handle Delete button clicks for a user game
 document.addEventListener("click", async (e) => {
   const deleteBtn = e.target.closest(".btn-delete");
   if (!deleteBtn) return;
@@ -179,6 +192,7 @@ document.addEventListener("click", async (e) => {
   }
 });
 
+// Handle Edit Game form submission
 function editGames() {
   const editGameForm = document.getElementById("edit-game-form");
 
@@ -319,6 +333,7 @@ function userStats() {
   return me;
 }
 
+// reviewListings handles fetching and rendering the user's reviews
 function reviewListings() {
   const me = {};
 
@@ -350,8 +365,8 @@ function reviewListings() {
         <p class="review-text collapsed">${r.text}</p>
         <button class="show-more-btn" onclick="toggleReview('review-1', this)">Show More</button>
         <div class="review-actions">
-          <button class="btn-review-action">Edit</button>
-          <button class="btn-review-action btn-review-delete">Delete</button>
+          <button class="btn-review-action btn-edit-review" data-id="${r._id}" data-text="${r.text}" data-rating="${r.rating}">Edit</button>
+          <button class="btn-review-action btn-delete-review" data-id="${r._id}" data-title="${r.gameTitle}">Delete</button>
         </div>
         `;
       wrap.appendChild(card);
@@ -378,6 +393,165 @@ function reviewListings() {
   return me;
 }
 
+// Handle adding a new review
+function addReview() {
+  const form = document.getElementById("new-review-form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const gameId = form.elements["review-game-id"].value;
+    const text = form.elements["review-text"].value.trim();
+    const rating = form.elements["review-rating"].value;
+
+    if (!gameId || !rating || !text) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          gameId,
+          userId,
+          rating,
+          text,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add review");
+
+      const data = await res.json();
+      console.log("New review added:", data);
+      bootstrap.Modal.getInstance(document.getElementById("add-review-modal")).hide();
+      form.reset();
+      myReviews.refreshReviews();
+    } catch (err) {
+      console.error("Error adding review:", err);
+    }
+  });
+}
+
+// Handle Review edit button click
+document.addEventListener("click", (e) => {
+  const editBtn = e.target.closest(".btn-edit-review:not(.btn-delete-review)");
+  if (!editBtn) return;
+
+  const reviewId = editBtn.dataset.id;
+  const reviewText = editBtn.dataset.text || "";
+  const reviewRating = editBtn.dataset.rating || "";
+
+  console.log("Editing review:", reviewId);
+
+  // Fill modal fields directly
+  document.getElementById("edit-review-id").value = reviewId;
+  document.getElementById("edit-review-text").value = reviewText;
+  document.getElementById("edit-review-rating").value = reviewRating;
+
+  const modal = new bootstrap.Modal(document.getElementById("edit-review-modal"));
+  modal.show();
+});
+
+document.addEventListener("click", async (e) => {
+  const deleteBtn = e.target.closest(".btn-delete-review");
+  if (!deleteBtn) return;
+
+  const id = deleteBtn.dataset.id;
+  const title = deleteBtn.dataset.title;
+
+  if (!confirm(`Are you sure you want to delete your review for "${title}"?`)) return;
+
+  try {
+    const res = await fetch(`/api/reviews/${id}`, { method: "DELETE" });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || "Failed to delete review.");
+
+    console.log("Deleted review:", id);
+    await myReviews.refreshReviews();
+  } catch (err) {
+    console.error("Error deleting review:", err);
+    alert(err.message);
+  }
+});
+
+function editReview() {
+  const editReviewForm = document.getElementById("edit-review-form");
+
+  editReviewForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById("edit-review-id").value;
+    const text = document.getElementById("edit-review-text").value.trim();
+    const rating = document.getElementById("edit-review-rating").value;
+
+    const res = await fetch(`/api/reviews/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rating, text }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      console.log("Review updated:", data);
+      const modal = bootstrap.Modal.getInstance(document.getElementById("edit-review-modal"));
+      if (modal) modal.hide();
+      await myReviews.refreshReviews();
+    } else {
+      alert(data.error || "Failed to update review.");
+    }
+  });
+}
+
+function reviewAutocomplete() {
+  const input = document.getElementById("review-game-title");
+  const hiddenInput = document.getElementById("review-game-id");
+  const suggestionsBox = document.getElementById("review-suggestions");
+
+  if (!input) return;
+  if (input.dataset.autocompleteBound === "true") return;
+  input.dataset.autocompleteBound = "true";
+
+  let timer;
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+    const query = input.value.trim();
+
+    if (!query) {
+      suggestionsBox.innerHTML = "";
+      hiddenInput.value = "";
+      return;
+    }
+
+    timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/games/autocomplete?query=${encodeURIComponent(query)}`);
+        const games = await res.json();
+
+        suggestionsBox.innerHTML = games
+          .map(
+            (g) => `
+              <li data-id="${g.id}" class="suggestion-item">${g.title}</li>
+            `
+          )
+          .join("");
+
+        suggestionsBox.querySelectorAll(".suggestion-item").forEach((item) => {
+          item.addEventListener("click", () => {
+            input.value = item.textContent;
+            hiddenInput.value = item.getAttribute("data-id");
+            suggestionsBox.innerHTML = "";
+          });
+        });
+      } catch (err) {
+        console.error("Error fetching review suggestions:", err);
+      }
+    }, 300);
+  });
+}
 const myGames = gameListings();
 const myStats = userStats();
 const myReviews = reviewListings();
