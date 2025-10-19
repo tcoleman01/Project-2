@@ -1,5 +1,6 @@
 import express from "express";
-import MyDB from "../db/MyMongoDB.js";
+//import MyDB from "../db/MyMongoDB.js";
+import * as MyDB from "../db/gamesDB.js";
 import { slugify } from "./utils/slugify.js";
 
 const router = express.Router();

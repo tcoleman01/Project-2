@@ -10,6 +10,17 @@ document.addEventListener("DOMContentLoaded", () => {
       setupAutocomplete();
       addGames();
     });
+
+    addGameModalEl.addEventListener("hidden.bs.modal", () => {
+      const form = document.getElementById("new-game-form");
+      if (form) form.reset();
+
+      const hiddenInput = document.getElementById("game-id");
+      if (hiddenInput) hiddenInput.value = "";
+
+      const suggestions = document.getElementById("suggestions");
+      if (suggestions) suggestions.innerHTML = "";
+    });
   }
 
   const editGameModalEl = document.getElementById("edit-game-modal");

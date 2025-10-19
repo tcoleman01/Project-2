@@ -1,5 +1,7 @@
 import express from "express";
-import MyDB from "../db/MyMongoDB.js";
+//import MyDB from "../db/MyMongoDB.js";
+import * as MyDB from "../db/reviewsDB.js";
+import { getGameByIdOrSlug } from "../db/gamesDB.js";
 import { ObjectId } from "mongodb";
 
 const router = express.Router();
@@ -30,7 +32,7 @@ router.post("/reviews", async (req, res) => {
       return res.status(400).json({ error: "gameId and userId are required" });
 
     // Check if the game exists
-    const game = await MyDB.getGameByIdOrSlug(gameId);
+    const game = await getGameByIdOrSlug(gameId);
     if (!game) return res.status(404).json({ error: "Game not found" });
 
     // Check if the user has already reviewed this game

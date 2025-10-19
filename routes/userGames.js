@@ -1,5 +1,7 @@
 import express from "express";
-import MyDB from "../db/MyMongoDB.js";
+//import MyDB from "../db/MyMongoDB.js";
+import * as MyDB from "../db/userGamesDB.js";
+import { getGameByIdOrSlug } from "../db/gamesDB.js";
 
 const router = express.Router();
 
@@ -50,7 +52,7 @@ router.post("/userGames/userId/:userId", async (req, res) => {
       isFinite(Number(moneySpent)) && Number(moneySpent) >= 0 ? Number(moneySpent) : 0;
 
     // Check if the game exists
-    const game = await MyDB.getGameByIdOrSlug(gameId);
+    const game = await getGameByIdOrSlug(gameId);
     if (!game) return res.status(404).json({ error: "Game not found" });
     // Add the game to the user's collection
     const newUserGame = await MyDB.addUserGame({
@@ -93,7 +95,7 @@ router.patch("/userGames/:id", async (req, res) => {
       const hours = Number(hoursPlayed);
       if (isNaN(hours) || hours < 0)
         return res.status(400).json({ error: "hoursPlayed must be a non-negative number" });
-      updates.hoursPlayed = hoursPlayed;
+      updates.hoursPlayed = hours;
     }
     if (moneySpent !== undefined) {
       const p = Number(moneySpent);
