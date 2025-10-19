@@ -14,6 +14,7 @@ Deployed URL: https://tcoleman01.github.io/Project-2/
 Narrated Video (2–3 min): add link once uploaded
 
 🖼️ Screenshot
+
 <img src="img/Login.png" alt="Login" width="300" />
 <img src="img/Sign Up.png" alt="Sign Up" width="300" />
 <img src="img/Forget Password.png" alt="Forget Password" width="300" />
