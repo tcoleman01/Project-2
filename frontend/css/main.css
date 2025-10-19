@@ -171,14 +171,13 @@ a:hover {
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(6px);
   box-shadow: var(--shadow);
-  
+
   top: 20px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
 }
 
-.sidebar-header
-{
+.sidebar-header {
   color: var(--text);
   font-size: 1.1rem;
   font-weight: 600;
@@ -195,8 +194,7 @@ a:hover {
   margin-bottom: 1.5rem;
 }
 
-.filter-section label,
-{
+.filter-section label {
   color: var(--muted);
   font-size: 0.85rem;
   font-weight: 600;
@@ -440,7 +438,7 @@ a:hover {
 /* Auth links (shared style for login/signup/forgot) */
 .auth-link {
   display: inline-block;
-  color: #63a4ff; 
+  color: #63a4ff;
   font-weight: 600;
   text-decoration: none;
   transition:
@@ -450,7 +448,7 @@ a:hover {
 
 .auth-link:hover {
   display: inline-block;
-  color: #63a4ff; 
+  color: #63a4ff;
   font-weight: 600;
   text-decoration: none;
   transition:
@@ -510,13 +508,16 @@ a:hover {
   letter-spacing: 0.5px;
 }
 
-/* ================= Modal (matches sidebar) ================= */
+/* ================= Modal  ================= */
 #add-game-modal .modal-dialog {
   max-width: 480px;
   margin: auto;
 }
 
-#add-game-modal .modal-content {
+#add-game-modal .modal-content,
+#edit-game-modal .modal-content,
+#add-review-modal .modal-content,
+#edit-review-modal .modal-content {
   background: var(--bg-2);
   color: var(--text);
   border: 1px solid rgba(255, 255, 255);
@@ -539,7 +540,9 @@ a:hover {
 }
 
 #add-game-modal .form-control,
-#add-game-modal .form-select {
+#add-game-modal .form-select,
+#add-review-modal .form-control,
+#add-review-modal .form-select {
   background: var(--bg-2);
   border: 1px solid rgba(255, 255, 255);
   color: var(--text);
@@ -569,7 +572,8 @@ a:hover {
 }
 
 /* ================= Autocomplete Dropdown ================= */
-#suggestions, #review-suggestions {
+#suggestions,
+#review-suggestions {
   background: var(--bg-2);
   border: 1px solid rgba(255, 255, 255);
   border-radius: 14px;
@@ -578,7 +582,7 @@ a:hover {
   color: var(--text);
   overflow: hidden;
   position: absolute;
-  top: 100%;          /* below the input */
+  top: 100%; /* below the input */
   left: 0;
   width: 100%;
   z-index: 1056;
@@ -587,7 +591,8 @@ a:hover {
   list-style: none;
 }
 
-#suggestions li , #review-suggestions li {
+#suggestions li,
+#review-suggestions li {
   padding: 0.65rem 0.9rem;
   border-bottom: 1px solid rgba(255, 255, 255);
   transition:
@@ -780,3 +785,29 @@ a:hover {
   aspect-ratio: 3 / 4;
 }
 
+.review-text {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  position: relative;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.review-text.collapsed {
+  max-height: 4.5em; /* roughly 3 lines */
+}
+
+.review-text::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.5em;
+  background: linear-gradient(transparent, white);
+  display: none;
+}
+
+.review-text.collapsed::after {
+  display: block;
+}

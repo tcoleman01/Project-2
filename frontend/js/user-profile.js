@@ -349,6 +349,10 @@ function reviewListings() {
     }
     wrap.innerHTML = "";
     for (const r of reviews) {
+      const MAX_PREVIEW_LENGTH = 200;
+      const fullText = r.text || "";
+      const isLong = fullText.length > MAX_PREVIEW_LENGTH;
+      const shortText = isLong ? fullText.slice(0, MAX_PREVIEW_LENGTH) + "..." : fullText;
       const card = document.createElement("div");
       card.className = "review-card";
       card.innerHTML = `
@@ -362,10 +366,10 @@ function reviewListings() {
             <div class="review-rating-label">Rating</div>
           </div>
         </div>
-        <p class="review-text collapsed">${r.text}</p>
-        <button class="show-more-btn" onclick="toggleReview('review-1', this)">Show More</button>
+        <p class="review-text mb-1" data-full="${fullText}">${shortText}</p>
+        ${isLong ? `<a href="#" class="toggle-review small text-primary" data-expanded="false">Read more</a>` : ""}
         <div class="review-actions">
-          <button class="btn-review-action btn-edit-review" data-id="${r._id}" data-text="${r.text}" data-rating="${r.rating}">Edit</button>
+          <button class="btn-review-action btn-edit-review" data-id="${r._id}" data-text="${fullText}" data-rating="${r.rating}">Edit</button>
           <button class="btn-review-action btn-delete-review" data-id="${r._id}" data-title="${r.gameTitle}">Delete</button>
         </div>
         `;
@@ -552,6 +556,29 @@ function reviewAutocomplete() {
     }, 300);
   });
 }
+
+document.addEventListener("click", (e) => {
+  const toggle = e.target.closest(".toggle-review");
+  if (!toggle) return;
+  e.preventDefault();
+
+  const p = toggle.previousElementSibling; // the <p> with class review-text
+  const isExpanded = toggle.dataset.expanded === "true";
+  const fullText = p.dataset.full;
+
+  if (isExpanded) {
+    // Collapse
+    p.textContent = fullText.slice(0, 200) + "...";
+    toggle.textContent = "Show more";
+    toggle.dataset.expanded = "false";
+  } else {
+    // Expand
+    p.textContent = fullText;
+    toggle.textContent = "Show less";
+    toggle.dataset.expanded = "true";
+  }
+});
+
 const myGames = gameListings();
 const myStats = userStats();
 const myReviews = reviewListings();
