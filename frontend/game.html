@@ -3,44 +3,71 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Game • VG Tracker</title>
+  <title>Games • VG Tracker</title>
+
+  <!-- CSS: Bootstrap first, your styles last -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="./css/main.css" />
   <link rel="stylesheet" href="./css/modules/game.css" />
+  <link rel="stylesheet" href="./css/main.css?v=5" />
 </head>
-<body class="bg-dark text-light">
+<body>
   <main class="container page page--wide">
+
+    <!-- Top bar -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h1 class="h3 m-0">My Account</h1>
-      <button id="logoutBtn" class="btn btn-outline-light btn-sm">Logout</button>
+      <h1 class="h3 m-0">Games</h1>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-light btn-sm" href="./index.html">Log Out</a>
+      </div>
     </div>
 
-    <!-- Quick links to demo pages (add-only) -->
-    <nav class="container my-3">
-      <div class="btn-group flex-wrap" role="group" aria-label="Theresa demo links">
-        <a class="btn btn-outline-primary btn-sm" href="./signup.html">Sign Up</a>
-        <a class="btn btn-outline-primary btn-sm" href="./index.html">Log In</a>
-        <a class="btn btn-outline-secondary btn-sm" href="./account.html">My Account</a>
-        <a class="btn btn-outline-secondary btn-sm" href="./user-profile.html">Dashboard</a>
+    <!-- Quick links nav -->
+    <nav class="my-3">
+      <div class="btn-group flex-wrap" role="group" aria-label="Navigation">
+        <a class="btn btn-outline-primary btn-sm" href="./account.html">My Account</a>
+        <a class="btn btn-outline-primary btn-sm" href="./user-profile.html">Dashboard</a>
         <a class="btn btn-outline-secondary btn-sm" href="./game.html">Games</a>
       </div>
     </nav>
-<body class="bg-dark text-light">
-  <main class="container page">
-    <a class="text-secondary d-inline-block mb-3" href="javascript:history.back()">← Back</a>
-    <div id="gameCard" class="card game-card--sheet p-3">
-      <div class="row g-3 align-items-start">
-        <div class="col-md-3"><img id="cover" class="img-fluid rounded game-cover" alt="Cover"></div>
-        <div class="col-md-9">
-          <h1 id="title" class="h4"></h1>
-          <p id="meta" class="mb-2"></p>
-          <p id="desc" class="mb-2"></p>
-          <p id="community" class="mb-0"></p>
-        </div>
+
+    <!-- Filters (optional) -->
+    <div class="row g-2 mb-3">
+      <div class="col-sm-6 col-lg-4">
+        <input type="search" class="form-control" placeholder="Search games..." />
+      </div>
+      <div class="col-sm-3 col-lg-2">
+        <select id="genre-filter" class="form-select">
+          <option>All Genres</option>
+          <option>Action</option>
+          <option>Adventure</option>
+          <option>RPG</option>
+          <option>Strategy</option>
+          <option>Sports</option>
+          <option>Simulation</option>
+          <option>Puzzle</option>
+          <option>Racing</option>
+        </select>
+      </div>
+      <div class="col-sm-3 col-lg-2">
+        <select id="status-filter" class="form-select">
+          <option>All Statuses</option>
+          <option>Playing</option>
+          <option>Completed</option>
+          <option>Backlog</option>
+          <option>Wishlist</option>
+        </select>
+      </div>
+      <div class="col-sm-12 col-lg-4 text-sm-end">
+        <span class="text-secondary small">Total: <strong id="total-games">0</strong></span>
       </div>
     </div>
+
+    <!-- Catalog grid (cards are injected here) -->
+    <div id="game-section" class="game-grid"></div>
+
   </main>
-  <script type="module" src="./js/frontend.js"></script>
-<script src="./js/game.js"></script>
+
+  <!-- Only the catalog script (do NOT include frontend.js here) -->
+  <script src="./js/game.js?v=5"></script>
 </body>
 </html>
