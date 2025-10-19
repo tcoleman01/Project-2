@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node ./node_modules/nodemon/bin/nodemon.js backend.js",
-    "seed": "node scripts/seed-1000.js",
+    "seed": "node routes/scripts/seed-1000.js",
     "lint": "eslint .",
     "format": "prettier -w ."
   },
