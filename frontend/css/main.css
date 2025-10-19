@@ -50,8 +50,9 @@ body {
 }
 /* Full-size feel while comfy on mobile */
 .container {
-  max-width: 960px;
+  max-width: 1120px;
 }
+
 
 /* Headings with a soft gradient accent */
 h1,
@@ -162,98 +163,6 @@ a:hover {
   border-color: var(--ring);
 }
 
-/* ================= Sidebar/Filter Panel ================= */
-/* Sidebar styling */
-.sidebar {
-  background: var(--card);
-  border-radius: 18px;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(6px);
-  box-shadow: var(--shadow);
-
-  top: 20px;
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-}
-
-.sidebar-header {
-  color: var(--text);
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.filter-section {
-  margin-bottom: 1.5rem;
-}
-
-.filter-section label {
-  color: var(--muted);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.75rem;
-  display: block;
-}
-
-.sidebar .form-control,
-.sidebar .form-select {
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--text);
-  border-radius: 14px;
-  padding: 0.6rem 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.sidebar .form-control:focus,
-.sidebar .form-select:focus {
-  box-shadow: 0 0 0 4px rgba(255, 199, 234, 0.25);
-  border-color: var(--ring);
-}
-
-.sidebar .form-control::placeholder {
-  color: #a9a3bb;
-}
-
-.sidebar .form-select option {
-  background-color: var(--bg-2);
-}
-
-.btn-reset {
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--muted);
-  padding: 0.6rem;
-  width: 100%;
-  border-radius: 14px;
-  transition: all 0.2s ease;
-}
-
-.btn-reset:hover {
-  background: var(--card);
-  color: var(--text);
-  border-color: var(--primary);
-  transform: translateY(-1px);
-}
-
-/* Game grid */
-.game-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  justify-items: center;
-}
-
 /* Game card styling */
 .game-card {
   width: 100%;
@@ -285,10 +194,63 @@ a:hover {
   position: relative;
 }
 
+/* Optional: consistent image sizing */
 .game-card-image img {
   width: 100%;
-  height: 100%;
+  height: 180px;
   object-fit: cover;
+  display: block;
+}
+
+#game-section.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start; /* or space-around / center */
+  gap: 1.5rem; /* nice breathing room */
+}
+
+#game-section.row > [class*="col-"] {
+  flex: 1 1 22%; /* roughly 4 per row */
+  max-width: 23%;
+  min-width: 260px; /* keep card readable */
+  display: flex; /* ensures cards stretch evenly */
+  justify-content: center;
+}
+
+/* Game grid layout — 4 per row on large screens */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  justify-content: start; /* ensures cards fill from the left */
+}
+
+/* 3 per row on medium screens */
+@media (max-width: 1200px) {
+  .game-grid {
+    grid-template-columns: repeat(3, minmax(250px, 1fr));
+  }
+}
+
+/* 2 per row on tablets */
+@media (max-width: 768px) {
+  .game-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+/* 1 per row on phones */
+@media (max-width: 576px) {
+  .game-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
 }
 
 .status-badge {
@@ -408,33 +370,17 @@ a:hover {
   box-shadow: 0 4px 12px rgba(138, 168, 255, 0.35);
 }
 
-.btn-delete {
+.btn-delete, .btn-reset {
   color: var(--primary);
 }
 
-.btn-delete:hover {
+.btn-delete:hover, .btn-reset:hover {
   background: var(--primary);
   color: var(--bg);
   border-color: var(--primary);
   box-shadow: 0 4px 12px rgba(255, 114, 182, 0.35);
 }
 
-/* Small-screen niceties */
-@media (max-width: 600px) {
-  .game-grid .col-md-3 {
-    width: 100%;
-  }
-  .stat-card {
-    margin-bottom: 12px;
-  }
-}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .btn {
-    transition: none;
-  }
-}
 /* Auth links (shared style for login/signup/forgot) */
 .auth-link {
   display: inline-block;
@@ -517,7 +463,7 @@ a:hover {
 #add-game-modal .modal-content,
 #edit-game-modal .modal-content,
 #add-review-modal .modal-content,
-#edit-review-modal .modal-content {
+#edit-review-modal .modal-content{
   background: var(--bg-2);
   color: var(--text);
   border: 1px solid rgba(255, 255, 255);
@@ -542,7 +488,9 @@ a:hover {
 #add-game-modal .form-control,
 #add-game-modal .form-select,
 #add-review-modal .form-control,
-#add-review-modal .form-select {
+#add-review-modal .form-select,
+#filter-offcanvas .form-control,
+#filter-offcanvas .form-select {
   background: var(--bg-2);
   border: 1px solid rgba(255, 255, 255);
   color: var(--text);
@@ -569,6 +517,11 @@ a:hover {
   color: var(--muted);
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255);
+}
+
+.offcanvas {
+  background: var(--bg-2);
+  color: var(--text);
 }
 
 /* ================= Autocomplete Dropdown ================= */
@@ -753,36 +706,6 @@ a:hover {
   color: var(--bg);
   border-color: var(--primary);
   box-shadow: 0 4px 12px rgba(255, 114, 182, 0.35);
-}
-
-/* Compact game grid: 2-up on tablets/desktop, 1-up on mobile */
-.game-grid,
-#game-section {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-/* Phone: stack */
-@media (max-width: 576px) {
-  .game-grid,
-  #game-section {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Card visuals that respect Bootstrap's dark theme vars */
-.game-card.card {
-  background-color: var(--bs-dark);
-  color: var(--bs-light);
-  border: 1px solid var(--bs-secondary);
-}
-
-/* Image crop for nice covers */
-.game-card .card-img-top {
-  object-fit: cover;
-  width: 100%;
-  aspect-ratio: 3 / 4;
 }
 
 .review-text {

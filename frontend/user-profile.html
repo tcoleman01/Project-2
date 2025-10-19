@@ -24,19 +24,19 @@
     <link rel="stylesheet" href="./css/main.css" />
   </head>
   <body>
-    <!-- Top bar -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h1 class="h3 m-0">Dashboard</h1>
-      <div class="d-flex gap-2">
-        <a class="btn btn-outline-light btn-sm" href="./index.html">Log Out</a>
-      </div>
+    <div class="container">
+      <header>
+        <h1>Dashboard</h1>
+      </header>
     </div>
 
-    <!-- Quick links nav -->
-    <nav class="my-3">
-      <div class="btn-group flex-wrap" role="group" aria-label="Navigation">
-        <a class="btn btn-outline-primary btn-sm" href="./account.html">My Account</a>
-        <a class="btn btn-outline-primary btn-sm" href="./user-profile.html">Dashboard</a>
+    <!-- Quick links to demo pages (add-only) -->
+    <nav class="container my-3">
+      <div class="btn-group flex-wrap" role="group" aria-label="Theresa demo links">
+        <a class="btn btn-outline-primary btn-sm" href="./signup.html">Sign Up</a>
+        <a class="btn btn-outline-primary btn-sm" href="./index.html">Log In</a>
+        <a class="btn btn-outline-secondary btn-sm" href="./account.html">My Account</a>
+        <a class="btn btn-outline-secondary btn-sm" href="./user-profile.html">Dashboard</a>
         <a class="btn btn-outline-secondary btn-sm" href="./game.html">Games</a>
       </div>
     </nav>
@@ -83,107 +83,21 @@
     <!--Container for personal game catalogue-->
     <div class="container py-4" id="personal-catalogue">
       <div class="row">
-        <!--Filter section-->
-        <div class="col-lg-3">
-          <div class="sidebar">
-            <div class="sidebar-header">Filters</div>
-            <div class="filter-section">
-              <label>Search</label>
-              <input type="text" class="form-control" placeholder="Search your games..." />
+        <div class="col-lg-12">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="section-header mb-5">The Goods</h2>
+            <div class="d-flex gap-2 mb-4">
+              <button type="button" class="btn btn-outline-secondary mb-4" data-bs-toggle="offcanvas" data-bs-target="#filter-offcanvas">Filters</button>
+              <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#add-game-modal" id="add-game-btn">Add New Game</button>
             </div>
-            <div class="filter-section">
-              <label>Status</label>
-              <select class="form-select" id="status-filter">
-                <option selected>All Statuses</option>
-                <option>Completed</option>
-                <option>Playing</option>
-                <option>Backlog</option>
-                <option>Wishlist</option>
-              </select>
-            </div>
-
-            <div class="filter-section">
-              <label>Genre</label>
-              <select class="form-select" id="genre-filter">
-                <option selected>All Genres</option>
-                <option>Action</option>
-                <option>Adventure</option>
-                <option>RPG</option>
-                <option>Strategy</option>
-                <option>Fighting</option>
-                <option>FPS</option>
-                <option>Platformer</option>
-                <option>Puzzle</option>
-                <option>Racing</option>
-                <option>MMORPG</option>
-                <option>Sandbox</option>
-                <option>Survival</option>
-                <option>Roguelike</option>
-                <option>Horror</option>
-                <option>Sports</option>
-                <option>Simulation</option>
-              </select>
-            </div>
-
-            <div class="filter-section">
-              <label>Platform</label>
-              <select class="form-select" id="platform-filter">
-                <option selected>All Platforms</option>
-                <option>PC</option>
-                <option>PlayStation 5</option>
-                <option>PlayStation 4</option>
-                <option>PlayStation 3</option>
-                <option>PlayStation 2</option>
-                <option>PlayStation</option>
-                <option>PlayStation Vita</option>
-                <option>Xbox Series X</option>
-                <option>Xbox One</option>
-                <option>Xbox 360</option>
-                <option>Nintendo Switch</option>
-                <option>Nintendo Wii U</option>
-                <option>Nintendo Wii</option>
-                <option>Nintendo GameCube</option>
-                <option>Nintendo 64</option>
-                <option>SNES</option>
-                <option>Nintendo 3DS</option>
-                <option>Nintendo DS</option>
-                <option>Game Boy Advance SP</option>
-                <option>Game Boy Advance</option>
-                <option>Game Boy Color</option>
-                <option>Game Boy</option>
-                <option>Mobile</option>
-              </select>
-            </div>
-
-            <div class="filter-section">
-              <label>Sort By</label>
-              <select class="form-select" id="sort-filter">
-                <option selected>Title (A-Z)</option>
-                <option>Title (Z-A)</option>
-                <option>Release Date (Newest)</option>
-                <option>Release Date (Oldest)</option>
-                <option>Hours Played (Most)</option>
-                <option>Hours Played (Least)</option>
-                <option>Price (High to Low)</option>
-                <option>Price (Low to High)</option>
-              </select>
-            </div>
-            <button class="btn btn-reset">Reset All Filters</button>
           </div>
-        </div>
-
-        <div class="col-lg-9">
-          <h2 class="section-header mb-5">The Goods</h2>
-          <span>
-            <button type="button" class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#add-game-modal" id="add-game-btn">Add New Game</button>
-          </span>
-          <div class="game-grid" id="game-section">
+          <div class="row game-grid align-items-center" id="game-section">
             <!-- Game cards will be dynamically inserted here -->
           </div>
         </div>
       </div>
       <div class="row">
-        <div class="col-lg-9">
+        <div class="col-lg-12">
           <h2 class="section-header mb-5">The Reviews</h2>
           <span>
             <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#add-review-modal" id="add-review-btn">Add New Review</button>
@@ -393,6 +307,97 @@
             </form>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Offcanvas Filters -->
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="filter-offcanvas">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Filters</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="filter-section">
+          <label>Search</label>
+          <input type="text" class="form-control" id="search-filter" placeholder="Search your games..." />
+        </div>
+        <div class="filter-section">
+          <label>Status</label>
+          <select class="form-select" id="status-filter">
+            <option selected>All Statuses</option>
+            <option>Completed</option>
+            <option>Playing</option>
+            <option>Backlog</option>
+            <option>Wishlist</option>
+          </select>
+        </div>
+        <div class="filter-section">
+          <label>Genre</label>
+          <select class="form-select" id="genre-filter">
+            <option selected>All Genres</option>
+            <option>Action</option>
+            <option>Adventure</option>
+            <option>RPG</option>
+            <option>Action RPG</option>
+            <option>Metroidvania</option>
+            <option>Strategy</option>
+            <option>Fighting</option>
+            <option>FPS</option>
+            <option>Platformer</option>
+            <option>Puzzle</option>
+            <option>Racing</option>
+            <option>MMORPG</option>
+            <option>Sandbox</option>
+            <option>Survival</option>
+            <option>Roguelike</option>
+            <option>Horror</option>
+            <option>Sports</option>
+            <option>Simulation</option>
+          </select>
+        </div>
+        <div class="filter-section">
+          <label>Platform</label>
+          <select class="form-select" id="platform-filter">
+            <option selected>All Platforms</option>
+            <option>PC</option>
+            <option>PlayStation 5</option>
+            <option>PlayStation 4</option>
+            <option>PlayStation 3</option>
+            <option>PlayStation 2</option>
+            <option>PlayStation</option>
+            <option>PlayStation Vita</option>
+            <option>Xbox Series X</option>
+            <option>Xbox One</option>
+            <option>Xbox 360</option>
+            <option>Nintendo Switch</option>
+            <option>Nintendo Wii U</option>
+            <option>Nintendo Wii</option>
+            <option>Nintendo GameCube</option>
+            <option>Nintendo 64</option>
+            <option>SNES</option>
+            <option>Nintendo 3DS</option>
+            <option>Nintendo DS</option>
+            <option>Game Boy Advance SP</option>
+            <option>Game Boy Advance</option>
+            <option>Game Boy Color</option>
+            <option>Game Boy</option>
+            <option>Mobile</option>
+          </select>
+        </div>
+        <div class="filter-section">
+          <label>Sort By</label>
+          <select class="form-select" id="sort-filter">
+            <option selected>Title (A-Z)</option>
+            <option>Title (Z-A)</option>
+            <option>Release Date (Newest)</option>
+            <option>Release Date (Oldest)</option>
+            <option>Hours Played (High to Low)</option>
+            <option>Hours Played (Low to High)</option>
+            <option>Price (High to Low)</option>
+            <option>Price (Low to High)</option>
+          </select>
+        </div>
+        <button class="btn btn-reset mt-3 w-100" id="reset-filters">Reset All Filters</button>
       </div>
     </div>
 

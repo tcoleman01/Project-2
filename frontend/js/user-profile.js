@@ -40,6 +40,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (editReviewModalEl) {
     editReview();
   }
+
+  document.getElementById("search-filter").addEventListener("input", applyFilters);
+  document.getElementById("status-filter").addEventListener("change", applyFilters);
+  document.getElementById("genre-filter").addEventListener("change", applyFilters);
+  document.getElementById("sort-filter").addEventListener("change", applyFilters);
+  document.getElementById("reset-filters").addEventListener("click", resetFilters);
 });
 
 // Autocomplete setup for the game title input field of add game modal
@@ -251,12 +257,15 @@ function gameListings() {
   const renderGames = (games) => {
     const wrap = document.getElementById("game-section");
     wrap.innerHTML = "";
+    wrap.classList.add("row", "game-grid");
     for (const g of games) {
       const game = g.gameDetails || {};
       const { title, platform, genre, price, year } = game;
       const status = g.status || "Playing"; // Default status
       const hoursPlayed = g.hoursPlayed || 0;
       const userRating = g.userReview?.rating || "-";
+      const col = document.createElement("div");
+      col.className = "col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 mb-4";
       const card = document.createElement("div");
       card.className = "game-card";
       card.innerHTML = `
@@ -290,9 +299,13 @@ function gameListings() {
                                 </div>
                             </div>
                 `;
-      wrap.appendChild(card);
+      col.appendChild(card);
+      wrap.appendChild(col);
     }
   };
+
+  me.renderGames = renderGames;
+  me.allGames = [];
 
   me.refreshGames = async () => {
     try {
@@ -301,6 +314,7 @@ function gameListings() {
 
       const data = await res.json();
       console.log("Fetched user games:", data);
+      me.allGames = data.games || [];
       renderGames(data.games);
     } catch (err) {
       console.error("Error fetching user games:", err);
@@ -589,6 +603,61 @@ document.addEventListener("click", (e) => {
     toggle.dataset.expanded = "true";
   }
 });
+
+function applyFilters() {
+  const search = document.getElementById("search-filter").value.toLowerCase();
+  const status = document.getElementById("status-filter").value;
+  const genre = document.getElementById("genre-filter").value;
+  const sortOption = document.getElementById("sort-filter").value;
+
+  let filtered = myGames.allGames.filter((g) => {
+    const matchesSearch = !search || g.gameDetails?.title?.toLowerCase().includes(search);
+    const matchesStatus = !status || status === "All Statuses" || g.status === status;
+    const matchesGenre = !genre || genre === "All Genres" || g.gameDetails?.genre === genre;
+    return matchesSearch && matchesStatus && matchesGenre;
+  });
+
+  switch (sortOption) {
+    case "Title (A-Z)":
+      filtered.sort((a, b) => a.gameDetails.title.localeCompare(b.gameDetails.title));
+      break;
+    case "Title (Z-A)":
+      filtered.sort((a, b) => b.gameDetails.title.localeCompare(a.gameDetails.title));
+      break;
+    case "Release Date (Newest)":
+      filtered.sort((a, b) => (b.gameDetails.year || 0) - (a.gameDetails.year || 0));
+      break;
+    case "Release Date (Oldest)":
+      filtered.sort((a, b) => (a.gameDetails.year || 0) - (b.gameDetails.year || 0));
+      break;
+    case "Hours Played (High to Low)":
+      filtered.sort((a, b) => (b.hoursPlayed || 0) - (a.hoursPlayed || 0));
+      break;
+    case "Hours Played (Low to High)":
+      filtered.sort((a, b) => (a.hoursPlayed || 0) - (b.hoursPlayed || 0));
+      break;
+    case "Price (High to Low)":
+      filtered.sort((a, b) => (b.gameDetails.price || 0) - (a.gameDetails.price || 0));
+      break;
+    case "Price (Low to High)":
+      filtered.sort((a, b) => (a.gameDetails.price || 0) - (b.gameDetails.price || 0));
+      break;
+  }
+
+  myGames.renderGames(filtered);
+}
+
+function resetFilters() {
+  // Reset all filter fields to default
+  document.getElementById("search-filter").value = "";
+  document.getElementById("status-filter").value = "All Statuses";
+  document.getElementById("genre-filter").value = "All Genres";
+  document.getElementById("sort-filter").value = "Title (A-Z)";
+
+  // Re-render all games
+  myGames.renderGames(myGames.allGames);
+}
+
 
 const myGames = gameListings();
 const myStats = userStats();
