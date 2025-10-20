@@ -256,7 +256,7 @@
             <form id="new-review-form"> <!-- Form Id for adding a new review -->
               <div class="mb-3 position-relative">
                 <label for="review-game-title" class="form-label">Game Title</label>
-                <input type="text" class="form-control" id="review-game-title" required />
+                <input type="text" class="form-control" autocomplete="off" id="review-game-title" required />
                 <input type="hidden" id="review-game-id" />
                 <ul id="review-suggestions"></ul>
               </div>
@@ -414,6 +414,12 @@
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
       crossorigin="anonymous"
     ></script>
-    <script src="./js/user-profile.js"></script>
+    <script type="module" src="/js/user-profile/games.js"></script>
+    <script type="module" src="/js/user-profile/stats.js"></script>
+    <script type="module" src="/js/user-profile/reviews.js"></script>
+    <script type="module" src="/js/user-profile/filters.js"></script>
+
+    <!-- Main entry point -->
+    <script type="module" src="/js/user-profile/main.js"></script>
   </body>
 </html>

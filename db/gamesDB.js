@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { connect, toObjectId } from "./index.js";
 
-const COLLECTION = "mock_games";
+const COLLECTION = "games";
 
 // Get all games, with optional filtering, pagination
 export async function getAllGames({ query = {}, pageSize = 20, page = 0 } = {}) {

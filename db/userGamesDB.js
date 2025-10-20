@@ -1,9 +1,9 @@
 import { ObjectId } from "mongodb";
 import { connect, toObjectId } from "./index.js";
 
-const COLLECTION = "mock_user_games";
-const gameCollection = "mock_games";
-const reviewCollection = "mock_reviews";
+const COLLECTION = "user_games";
+const gameCollection = "games";
+const reviewCollection = "reviews";
 
 // Add a new userGame entry - used when a user adds a game to their collection
 export async function addUserGame({ userId, gameId, status, hoursPlayed, moneySpent }) {

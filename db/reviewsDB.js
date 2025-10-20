@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { connect } from "./index.js";
 
-const COLLECTION = "mock_reviews";
+const COLLECTION = "reviews";
 
 // Get all reviews, with optional filtering by gameId and/or userId, pagination
 export async function getReviews({ gameId, userId, pageSize = 20, page = 0 } = {}) {

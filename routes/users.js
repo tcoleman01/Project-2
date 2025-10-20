@@ -20,9 +20,9 @@ const IS_PROD = process.env.NODE_ENV === "production";
 const COOKIE = {
   httpOnly: true,
   sameSite: "lax",
-  secure: IS_PROD,        // true on HTTPS (production)
+  secure: IS_PROD, // true on HTTPS (production)
   maxAge: 2 * 60 * 60 * 1000, // 2h
-  path: "/",              // explicitly set so we can reliably clear it later
+  path: "/", // explicitly set so we can reliably clear it later
 };
 
 // Ensure unique index on email once at startup

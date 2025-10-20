@@ -1,6 +1,6 @@
 // db/usersDB.js
 import bcrypt from "bcryptjs";
-import { connect } from "./index.js"; // you already use this helper in other DB files
+import { connect } from "./index.js";
 
 const COLLECTION = "users";
 
