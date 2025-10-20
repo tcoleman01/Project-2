@@ -1,3 +1,5 @@
+/* global bootstrap */
+
 console.log("user-profile.js loaded");
 
 const userId = "200000000000000000000001";
@@ -260,10 +262,11 @@ function gameListings() {
     wrap.classList.add("row", "game-grid");
     for (const g of games) {
       const game = g.gameDetails || {};
-      const { title, platform, genre, price, year } = game;
+      const { title, platform, genre, year } = game;
       const status = g.status || "Playing"; // Default status
       const hoursPlayed = g.hoursPlayed || 0;
       const userRating = g.userReview?.rating || "-";
+      const moneySpent = g.moneySpent?.toFixed ? g.moneySpent.toFixed(2) : "0.00";
       const col = document.createElement("div");
       col.className = "col-12 col-sm-6 col-md-4 col-lg-3 col-xl-3 mb-4";
       const card = document.createElement("div");
@@ -281,7 +284,7 @@ function gameListings() {
                                 <div class="game-meta">
                                     <span class="game-meta-tag">${year || "-"}</span>
                                     <span class="game-meta-tag">${platform}</span>
-                                    <span class="game-meta-tag">$${price?.toFixed ? price.toFixed(2) : "0.00"}</span>
+                                    <span class="game-meta-tag">$${moneySpent}</span>
                                 </div>    
                                 <div class="game-stats">
                                     <div class="stat-item">
@@ -289,7 +292,7 @@ function gameListings() {
                                         <div class="stat-label">Hours</div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-value">${userRating}</div>
+                                    <div class="stat-value">${userRating}/5</div>
                                     <div class="stat-label">Rating</div>
                                 </div>
                                 </div>
@@ -378,13 +381,14 @@ function reviewListings() {
       const fullText = r.text || "";
       const isLong = fullText.length > MAX_PREVIEW_LENGTH;
       const shortText = isLong ? fullText.slice(0, MAX_PREVIEW_LENGTH) + "..." : fullText;
+      const date = new Date(r.updatedAt).toLocaleDateString();
       const card = document.createElement("div");
       card.className = "review-card";
       card.innerHTML = `
         <div class="review-header">
           <div>
             <h5 class="review-game-title">${r.gameTitle}</h5>
-            <div class="review-meta">Reviewed on ${r.updatedAt}</div>
+            <div class="review-meta">Reviewed on ${date}</div>
           </div>
           <div class="review-rating-badge">
             <div class="review-rating-value">${r.rating}/5</div>
@@ -457,7 +461,8 @@ function addReview() {
       console.log("New review added:", data);
       bootstrap.Modal.getInstance(document.getElementById("add-review-modal")).hide();
       form.reset();
-      myReviews.refreshReviews();
+      await myReviews.refreshReviews();
+      await myGames.refreshGames();
     } catch (err) {
       console.error("Error adding review:", err);
     }
@@ -529,6 +534,7 @@ function editReview() {
       const modal = bootstrap.Modal.getInstance(document.getElementById("edit-review-modal"));
       if (modal) modal.hide();
       await myReviews.refreshReviews();
+      await myGames.refreshGames();
     } else {
       alert(data.error || "Failed to update review.");
     }
@@ -657,7 +663,6 @@ function resetFilters() {
   // Re-render all games
   myGames.renderGames(myGames.allGames);
 }
-
 
 const myGames = gameListings();
 const myStats = userStats();

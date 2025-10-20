@@ -489,6 +489,10 @@ a:hover {
 #add-game-modal .form-select,
 #add-review-modal .form-control,
 #add-review-modal .form-select,
+#edit-review-modal .form-control,
+#edit-review-modal .form-select,
+#edit-game-modal .form-control,
+#edit-game-modal .form-select,
 #filter-offcanvas .form-control,
 #filter-offcanvas .form-select {
   background: var(--bg-2);
