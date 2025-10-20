@@ -11,7 +11,8 @@ A full-stack web app that lets users track their video games — log hours playe
 
 Deployed URL: https://tcoleman01.github.io/Project-2/
 
-Narrated Video (2–3 min): add link once uploaded
+Narrated Video (2–3 min): 
+Theresa's Video: https://youtu.be/pj_9FvMdd6w
 
 🖼️ Screenshot
 
