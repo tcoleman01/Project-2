@@ -13,6 +13,7 @@ Deployed URL: https://tcoleman01.github.io/Project-2/
 
 Narrated Video (2–3 min): 
 Theresa's Video: https://youtu.be/pj_9FvMdd6w
+Stewart's Video: https://youtu.be/JOPdEuMu4Xc
 
 🖼️ Screenshot
 
