@@ -46,6 +46,10 @@ router.post("/userGames/userId/:userId", async (req, res) => {
     if (!userId || !gameId)
       return res.status(400).json({ error: "userId and gameId are required" });
 
+    const existing = await MyDB.getUserGames(userId);
+    if (existing.find((ug) => ug.gameId === gameId))
+      return res.status(409).json({ error: "This game is already in your library somehow" });
+
     const goodHours =
       isFinite(Number(hoursPlayed)) && Number(hoursPlayed) >= 0 ? Number(hoursPlayed) : 0;
     const goodMoney =

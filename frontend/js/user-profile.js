@@ -6,48 +6,29 @@ const userId = "200000000000000000000001";
 
 // Initialize event listeners when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("user-profile.js loaded");
+
+  setupAutocomplete();
+  addGames();
+  editGames();
+  addReview();
+  editReview();
+
+  document.getElementById("search-filter")?.addEventListener("input", applyFilters);
+  document.getElementById("status-filter")?.addEventListener("change", applyFilters);
+  document.getElementById("genre-filter")?.addEventListener("change", applyFilters);
+  document.getElementById("sort-filter")?.addEventListener("change", applyFilters);
+  document.getElementById("reset-filters")?.addEventListener("click", resetFilters);
+
   const addGameModalEl = document.getElementById("add-game-modal");
   if (addGameModalEl) {
-    addGameModalEl.addEventListener("shown.bs.modal", () => {
-      setupAutocomplete();
-      addGames();
-    });
-
     addGameModalEl.addEventListener("hidden.bs.modal", () => {
       const form = document.getElementById("new-game-form");
       if (form) form.reset();
-
-      const hiddenInput = document.getElementById("game-id");
-      if (hiddenInput) hiddenInput.value = "";
-
-      const suggestions = document.getElementById("suggestions");
-      if (suggestions) suggestions.innerHTML = "";
+      document.getElementById("game-id").value = "";
+      document.getElementById("suggestions").innerHTML = "";
     });
   }
-
-  const editGameModalEl = document.getElementById("edit-game-modal");
-  if (editGameModalEl) {
-    editGames();
-  }
-
-  const addReviewModalEl = document.getElementById("add-review-modal");
-  if (addReviewModalEl) {
-    addReviewModalEl.addEventListener("shown.bs.modal", () => {
-      reviewAutocomplete();
-      addReview();
-    });
-  }
-
-  const editReviewModalEl = document.getElementById("edit-review-modal");
-  if (editReviewModalEl) {
-    editReview();
-  }
-
-  document.getElementById("search-filter").addEventListener("input", applyFilters);
-  document.getElementById("status-filter").addEventListener("change", applyFilters);
-  document.getElementById("genre-filter").addEventListener("change", applyFilters);
-  document.getElementById("sort-filter").addEventListener("change", applyFilters);
-  document.getElementById("reset-filters").addEventListener("click", resetFilters);
 });
 
 // Autocomplete setup for the game title input field of add game modal
@@ -117,6 +98,9 @@ function setupAutocomplete() {
 // addGames handles the "Add New Game" form submission
 function addGames() {
   const addGameForm = document.getElementById("new-game-form");
+
+  if (addGameForm.dataset.listenerAttached === "true") return;
+  addGameForm.dataset.listenerAttached = "true";
 
   addGameForm.addEventListener("submit", async (e) => {
     e.preventDefault();
